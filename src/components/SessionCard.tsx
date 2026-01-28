@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Calendar, Clock, MapPin, Users, Loader2, Check, X, Trash2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Loader2, Check, X, Trash2, User } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -60,10 +60,35 @@ const sportLabels: Record<string, string> = {
   autre: 'Autre',
 };
 
+interface CreatorProfile {
+  full_name: string | null;
+  email: string;
+  avatar_url: string | null;
+}
+
 export default function SessionCard({ session, onBookingChange, showPastStatus = false }: SessionCardProps) {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isDeletingSession, setIsDeletingSession] = useState(false);
+  const [creator, setCreator] = useState<CreatorProfile | null>(null);
+  
+  useEffect(() => {
+    async function fetchCreator() {
+      if (!session.created_by) return;
+      
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name, email, avatar_url')
+        .eq('user_id', session.created_by)
+        .maybeSingle();
+      
+      if (data) {
+        setCreator(data);
+      }
+    }
+    
+    fetchCreator();
+  }, [session.created_by]);
   
   const today = new Date().toISOString().split('T')[0];
   const isPast = session.session_date < today;
@@ -73,6 +98,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
   const isFull = spotsLeft <= 0;
   const sportEmoji = sportEmojis[session.sport_type.toLowerCase()] || sportEmojis.default;
   const sportLabel = sportLabels[session.sport_type.toLowerCase()] || session.sport_type;
+  const creatorName = creator?.full_name || creator?.email || 'Inconnu';
 
   async function handleBook() {
     if (!user) return;
@@ -193,6 +219,11 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
             <span className={`${isFull ? 'text-destructive' : 'text-muted-foreground'}`}>
               {spotsLeft} {spotsLeft === 1 ? 'place restante' : 'places restantes'} sur {session.max_participants}
             </span>
+          </div>
+          
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <User className="h-4 w-4 text-primary" />
+            <span>Organisé par {creatorName}</span>
           </div>
         </div>
         
