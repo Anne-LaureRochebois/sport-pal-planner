@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 
 interface Session {
   id: string;
@@ -142,41 +141,32 @@ export default function Dashboard() {
           
           <TabsContent value="upcoming">
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-6 p-4 bg-muted/50 rounded-lg">
-              <div className="flex-1 space-y-1">
-                <Label htmlFor="filter-sport" className="text-xs text-muted-foreground">Type de sport</Label>
-                <Select value={filterSport} onValueChange={setFilterSport}>
-                  <SelectTrigger id="filter-sport" className="bg-background">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover">
-                    {sportTypes.map((sport) => (
-                      <SelectItem key={sport.value} value={sport.value}>
-                        {sport.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <Select value={filterSport} onValueChange={setFilterSport}>
+                <SelectTrigger className="h-8 w-[140px] text-xs bg-background">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  {sportTypes.map((sport) => (
+                    <SelectItem key={sport.value} value={sport.value} className="text-xs">
+                      {sport.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               
-              <div className="flex-1 space-y-1">
-                <Label htmlFor="filter-date" className="text-xs text-muted-foreground">Date</Label>
-                <Input
-                  id="filter-date"
-                  type="date"
-                  value={filterDate}
-                  onChange={(e) => setFilterDate(e.target.value)}
-                  className="bg-background"
-                />
-              </div>
+              <Input
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                className="h-8 w-[140px] text-xs bg-background"
+              />
               
               {hasActiveFilters && (
-                <div className="flex items-end">
-                  <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
-                    <X className="h-3 w-3" />
-                    Effacer
-                  </Button>
-                </div>
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 px-2 text-xs">
+                  <X className="h-3 w-3 mr-1" />
+                  Effacer
+                </Button>
               )}
             </div>
             
