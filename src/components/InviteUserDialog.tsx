@@ -67,12 +67,12 @@ export default function InviteUserDialog() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" className="w-full sm:w-auto">
           <UserPlus className="h-4 w-4 mr-2" />
-          Inviter un utilisateur
+          Inviter
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className="max-w-[95vw] sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle className="font-display">Inviter un nouvel utilisateur</DialogTitle>
         </DialogHeader>

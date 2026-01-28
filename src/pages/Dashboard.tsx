@@ -84,17 +84,17 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="container py-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <main className="container px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex flex-col gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="font-display text-3xl font-bold">Séances</h1>
-            <p className="text-muted-foreground mt-1">
-              Trouvez et réservez des séances sportives avec vos amis
+            <h1 className="font-display text-2xl sm:text-3xl font-bold">Séances</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+              Trouvez et réservez des séances sportives
             </p>
           </div>
           
           {isAdmin && (
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <InviteUserDialog />
               <CreateSessionDialog onSessionCreated={fetchSessions} />
             </div>
@@ -102,14 +102,14 @@ export default function Dashboard() {
         </div>
         
         <Tabs defaultValue="upcoming" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="upcoming" className="gap-2">
-              <Calendar className="h-4 w-4" />
-              Toutes les séances
+          <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
+            <TabsTrigger value="upcoming" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+              <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Toutes les</span> Séances
             </TabsTrigger>
-            <TabsTrigger value="my-sessions" className="gap-2">
-              <Inbox className="h-4 w-4" />
-              Mes réservations
+            <TabsTrigger value="my-sessions" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+              <Inbox className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Mes</span> Réservations
             </TabsTrigger>
           </TabsList>
           

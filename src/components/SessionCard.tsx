@@ -168,32 +168,32 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
 
   return (
     <Card className={`group transition-all duration-300 hover:shadow-card animate-fade-in ${isBooked && !isPast ? 'ring-2 ring-primary/50' : ''} ${isPast && showPastStatus ? 'opacity-60 grayscale' : ''}`}>
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">{sportEmoji}</span>
-            <div>
-              <h3 className="font-display font-semibold text-lg leading-tight">{session.title}</h3>
-              <Badge variant="secondary" className="mt-1 capitalize">
+      <CardHeader className="pb-3 px-4 sm:px-6">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <span className="text-2xl sm:text-3xl flex-shrink-0">{sportEmoji}</span>
+            <div className="min-w-0">
+              <h3 className="font-display font-semibold text-base sm:text-lg leading-tight truncate">{session.title}</h3>
+              <Badge variant="secondary" className="mt-1 capitalize text-xs">
                 {sportLabel}
               </Badge>
             </div>
           </div>
           {isBooked && !isPast && (
-            <Badge className="bg-success text-success-foreground">
+            <Badge className="bg-success text-success-foreground text-xs flex-shrink-0">
               <Check className="h-3 w-3 mr-1" />
               Réservé
             </Badge>
           )}
           {isPast && showPastStatus && (
-            <Badge variant="secondary" className="text-muted-foreground">
+            <Badge variant="secondary" className="text-muted-foreground text-xs flex-shrink-0">
               Passée
             </Badge>
           )}
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 px-4 sm:px-6">
         {session.description && (
           <p className="text-sm text-muted-foreground">{session.description}</p>
         )}
@@ -258,7 +258,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
         )}
       </CardContent>
       
-      <CardFooter className="flex-col gap-2">
+      <CardFooter className="flex-col gap-2 px-4 sm:px-6">
         {isPast && showPastStatus ? (
           <Button variant="secondary" size="sm" className="w-full" disabled>
             Séance terminée
