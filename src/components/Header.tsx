@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LogOut, Camera } from 'lucide-react';
+import { LogOut, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import ProfileAvatarUpload from './ProfileAvatarUpload';
+import InviteUserDialog from './InviteUserDialog';
 
 interface Profile {
   avatar_url: string | null;
@@ -88,6 +89,17 @@ export default function Header() {
                 </div>
               </div>
               <DropdownMenuSeparator />
+              {isAdmin && (
+                <InviteUserDialog 
+                  trigger={
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer">
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      <span>Inviter un utilisateur</span>
+                    </DropdownMenuItem>
+                  }
+                />
+              )}
+              {isAdmin && <DropdownMenuSeparator />}
               <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive focus:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Se déconnecter</span>

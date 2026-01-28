@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/Header';
 import SessionCard from '@/components/SessionCard';
 import CreateSessionDialog from '@/components/CreateSessionDialog';
-import InviteUserDialog from '@/components/InviteUserDialog';
+
 import { Loader2, Calendar, Inbox, Filter, X } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -124,10 +124,7 @@ export default function Dashboard() {
           </div>
           
           {isAdmin && (
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <InviteUserDialog />
-              <CreateSessionDialog onSessionCreated={fetchSessions} />
-            </div>
+            <CreateSessionDialog onSessionCreated={fetchSessions} />
           )}
         </div>
         
