@@ -6,101 +6,112 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 210 40% 11%;
+    --background: 220 20% 97%;
+    --foreground: 220 25% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 40% 11%;
+    --card-foreground: 220 25% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 40% 11%;
+    --popover-foreground: 220 25% 10%;
 
-    --primary: 168 76% 36%;
+    /* Orange énergique - couleur principale sport */
+    --primary: 24 95% 53%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 168 30% 94%;
-    --secondary-foreground: 168 76% 26%;
+    --secondary: 220 15% 94%;
+    --secondary-foreground: 220 25% 25%;
 
-    --muted: 210 20% 96%;
-    --muted-foreground: 210 15% 45%;
+    --muted: 220 15% 94%;
+    --muted-foreground: 220 10% 45%;
 
-    --accent: 168 50% 90%;
-    --accent-foreground: 168 76% 26%;
+    /* Bleu électrique pour les accents */
+    --accent: 210 100% 95%;
+    --accent-foreground: 210 100% 40%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 20% 90%;
-    --input: 210 20% 90%;
-    --ring: 168 76% 36%;
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 24 95% 53%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-foreground: 220 15% 25%;
+    --sidebar-primary: 24 95% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 94%;
+    --sidebar-accent-foreground: 220 25% 15%;
+    --sidebar-border: 220 15% 90%;
+    --sidebar-ring: 24 95% 53%;
 
     /* Custom tokens */
-    --success: 142 76% 36%;
+    --success: 142 70% 45%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 45 93% 47%;
     --warning-foreground: 0 0% 100%;
+    --info: 210 100% 50%;
+    --info-foreground: 0 0% 100%;
+
+    /* Sport accent colors */
+    --sport-orange: 24 95% 53%;
+    --sport-blue: 210 100% 50%;
+    --sport-lime: 82 85% 45%;
+    --sport-purple: 270 70% 55%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(168 76% 36%), hsl(168 76% 46%));
-    --gradient-hero: linear-gradient(135deg, hsl(168 76% 36%), hsl(185 76% 40%));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(168 30% 98%));
+    --gradient-primary: linear-gradient(135deg, hsl(24 95% 53%), hsl(35 95% 55%));
+    --gradient-hero: linear-gradient(135deg, hsl(24 95% 53%), hsl(210 100% 50%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 20% 98%));
+    --gradient-sport: linear-gradient(135deg, hsl(24 95% 53%), hsl(82 85% 45%));
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(210 20% 11% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(210 20% 11% / 0.1), 0 2px 4px -2px hsl(210 20% 11% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(210 20% 11% / 0.1), 0 4px 6px -4px hsl(210 20% 11% / 0.1);
-    --shadow-card: 0 4px 20px -4px hsl(168 76% 36% / 0.15);
-    --shadow-button: 0 4px 14px 0 hsl(168 76% 36% / 0.35);
+    --shadow-sm: 0 1px 2px 0 hsl(220 25% 10% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(220 25% 10% / 0.1), 0 2px 4px -2px hsl(220 25% 10% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(220 25% 10% / 0.1), 0 4px 6px -4px hsl(220 25% 10% / 0.1);
+    --shadow-card: 0 4px 20px -4px hsl(24 95% 53% / 0.2);
+    --shadow-button: 0 4px 14px 0 hsl(24 95% 53% / 0.4);
   }
 
   .dark {
-    --background: 210 40% 8%;
-    --foreground: 210 20% 98%;
+    --background: 220 25% 8%;
+    --foreground: 220 15% 95%;
 
-    --card: 210 40% 11%;
-    --card-foreground: 210 20% 98%;
+    --card: 220 25% 12%;
+    --card-foreground: 220 15% 95%;
 
-    --popover: 210 40% 11%;
-    --popover-foreground: 210 20% 98%;
+    --popover: 220 25% 12%;
+    --popover-foreground: 220 15% 95%;
 
-    --primary: 168 76% 42%;
+    --primary: 24 95% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 168 30% 15%;
-    --secondary-foreground: 168 76% 70%;
+    --secondary: 220 20% 18%;
+    --secondary-foreground: 220 15% 80%;
 
-    --muted: 210 30% 15%;
-    --muted-foreground: 210 15% 65%;
+    --muted: 220 20% 18%;
+    --muted-foreground: 220 10% 60%;
 
-    --accent: 168 40% 18%;
-    --accent-foreground: 168 76% 70%;
+    --accent: 210 80% 20%;
+    --accent-foreground: 210 100% 70%;
 
-    --destructive: 0 62% 45%;
+    --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 30% 18%;
-    --input: 210 30% 18%;
-    --ring: 168 76% 42%;
+    --border: 220 20% 20%;
+    --input: 220 20% 20%;
+    --ring: 24 95% 58%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-background: 220 25% 10%;
+    --sidebar-foreground: 220 15% 90%;
+    --sidebar-primary: 24 95% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 220 20% 16%;
+    --sidebar-accent-foreground: 220 15% 90%;
+    --sidebar-border: 220 20% 18%;
+    --sidebar-ring: 24 95% 58%;
   }
 }
 
@@ -132,6 +143,10 @@
     background: var(--gradient-card);
   }
 
+  .gradient-sport {
+    background: var(--gradient-sport);
+  }
+
   .shadow-card {
     box-shadow: var(--shadow-card);
   }
@@ -143,10 +158,26 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  .text-sport-orange {
+    color: hsl(var(--sport-orange));
+  }
+
+  .text-sport-blue {
+    color: hsl(var(--sport-blue));
+  }
+
+  .text-sport-lime {
+    color: hsl(var(--sport-lime));
+  }
 }
 
 @layer components {
   .glass-card {
     @apply bg-card/80 backdrop-blur-sm border border-border/50;
+  }
+
+  .sport-card {
+    @apply bg-card border border-border/50 shadow-card hover:shadow-lg transition-all duration-300;
   }
 }
