@@ -44,6 +44,13 @@ export default function CreateSessionDialog({ onSessionCreated }: CreateSessionD
     
     if (!user) return;
     
+    // Validate date is not in the past
+    const today = new Date().toISOString().split('T')[0];
+    if (formData.session_date < today) {
+      toast.error('La date de la séance ne peut pas être dans le passé');
+      return;
+    }
+    
     setIsLoading(true);
     
     const { error } = await supabase.from('sessions').insert({

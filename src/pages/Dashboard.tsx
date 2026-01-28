@@ -63,7 +63,7 @@ export default function Dashboard() {
   const today = new Date().toISOString().split('T')[0];
   const upcomingSessions = sessions.filter(s => s.session_date >= today);
   const mySessions = sessions.filter(s => 
-    s.bookings.some(b => b.user_id === user?.id) && s.session_date >= today
+    s.bookings.some(b => b.user_id === user?.id)
   );
 
   if (loading) {
@@ -142,6 +142,7 @@ export default function Dashboard() {
                     key={session.id} 
                     session={session} 
                     onBookingChange={fetchSessions}
+                    showPastStatus={true}
                   />
                 ))}
               </div>

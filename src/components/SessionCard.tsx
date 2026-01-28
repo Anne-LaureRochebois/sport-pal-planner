@@ -36,6 +36,7 @@ interface Session {
 interface SessionCardProps {
   session: Session;
   onBookingChange: () => void;
+  showPastStatus?: boolean;
 }
 
 const sportEmojis: Record<string, string> = {
@@ -57,10 +58,12 @@ const sportLabels: Record<string, string> = {
   autre: 'Autre',
 };
 
-export default function SessionCard({ session, onBookingChange }: SessionCardProps) {
+export default function SessionCard({ session, onBookingChange, showPastStatus = false }: SessionCardProps) {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   
+  const today = new Date().toISOString().split('T')[0];
+  const isPast = session.session_date < today;
   const isBooked = session.bookings.some(b => b.user_id === user?.id);
   const spotsLeft = session.max_participants - session.bookings.length;
   const isFull = spotsLeft <= 0;
@@ -106,7 +109,7 @@ export default function SessionCard({ session, onBookingChange }: SessionCardPro
   }
 
   return (
-    <Card className={`group transition-all duration-300 hover:shadow-card animate-fade-in ${isBooked ? 'ring-2 ring-primary/50' : ''}`}>
+    <Card className={`group transition-all duration-300 hover:shadow-card animate-fade-in ${isBooked && !isPast ? 'ring-2 ring-primary/50' : ''} ${isPast && showPastStatus ? 'opacity-60 grayscale' : ''}`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -118,10 +121,15 @@ export default function SessionCard({ session, onBookingChange }: SessionCardPro
               </Badge>
             </div>
           </div>
-          {isBooked && (
+          {isBooked && !isPast && (
             <Badge className="bg-success text-success-foreground">
               <Check className="h-3 w-3 mr-1" />
               Réservé
+            </Badge>
+          )}
+          {isPast && showPastStatus && (
+            <Badge variant="secondary" className="text-muted-foreground">
+              Passée
             </Badge>
           )}
         </div>
@@ -187,7 +195,11 @@ export default function SessionCard({ session, onBookingChange }: SessionCardPro
       </CardContent>
       
       <CardFooter>
-        {isBooked ? (
+        {isPast && showPastStatus ? (
+          <Button variant="secondary" className="w-full" disabled>
+            Séance terminée
+          </Button>
+        ) : isBooked ? (
           <Button 
             variant="outline" 
             className="w-full" 
