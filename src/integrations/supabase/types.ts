@@ -203,6 +203,7 @@ export type Database = {
           description: string | null
           end_time: string
           id: string
+          is_cancelled: boolean
           is_recurring_instance: boolean | null
           location: string
           max_participants: number
@@ -221,6 +222,7 @@ export type Database = {
           description?: string | null
           end_time: string
           id?: string
+          is_cancelled?: boolean
           is_recurring_instance?: boolean | null
           location: string
           max_participants?: number
@@ -239,6 +241,7 @@ export type Database = {
           description?: string | null
           end_time?: string
           id?: string
+          is_cancelled?: boolean
           is_recurring_instance?: boolean | null
           location?: string
           max_participants?: number

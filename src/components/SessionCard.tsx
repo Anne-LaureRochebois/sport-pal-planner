@@ -53,6 +53,7 @@ interface Session {
   recurrence_type?: string | null;
   parent_session_id?: string | null;
   is_recurring_instance?: boolean;
+  is_cancelled?: boolean;
 }
 
 interface SessionCardProps {
@@ -122,6 +123,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
   const creatorName = creator?.full_name || creator?.email || 'Inconnu';
   const isRecurring = session.recurrence_type && session.recurrence_type !== 'none';
   const isRecurringInstance = session.is_recurring_instance || false;
+  const isCancelled = session.is_cancelled || false;
 
   async function handleBook() {
     if (!user) return;
@@ -161,31 +163,28 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
     }
   }
 
-  async function handleDeleteSession() {
+  async function handleCancelSession() {
     if (!user || !canDelete) return;
     
     setIsDeletingSession(true);
     
-    // First delete all bookings for this session
-    await supabase.from('bookings').delete().eq('session_id', session.id);
-    
-    // Then delete the session
+    // Mark session as cancelled instead of deleting
     const { error } = await supabase
       .from('sessions')
-      .delete()
+      .update({ is_cancelled: true })
       .eq('id', session.id);
     
     setIsDeletingSession(false);
     
     if (error) {
-      toast.error('Échec de la suppression de la séance');
+      toast.error("Échec de l'annulation de la séance");
     } else {
-      toast.success('Séance supprimée');
+      toast.success('Séance annulée');
       onBookingChange();
     }
   }
 
-  async function handleDeleteAllRecurring() {
+  async function handleCancelAllRecurring() {
     if (!user || !canDelete) return;
     
     setIsDeletingSession(true);
@@ -193,29 +192,24 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
     // Get parent session ID
     const parentId = session.parent_session_id || session.id;
     
-    // Delete all child sessions first
-    const { data: childSessions } = await supabase
+    // Mark all child sessions as cancelled
+    await supabase
       .from('sessions')
-      .select('id')
+      .update({ is_cancelled: true })
       .eq('parent_session_id', parentId);
     
-    if (childSessions) {
-      for (const child of childSessions) {
-        await supabase.from('bookings').delete().eq('session_id', child.id);
-      }
-      await supabase.from('sessions').delete().eq('parent_session_id', parentId);
-    }
-    
-    // Delete bookings and the parent session
-    await supabase.from('bookings').delete().eq('session_id', parentId);
-    const { error } = await supabase.from('sessions').delete().eq('id', parentId);
+    // Mark parent session as cancelled
+    const { error } = await supabase
+      .from('sessions')
+      .update({ is_cancelled: true })
+      .eq('id', parentId);
     
     setIsDeletingSession(false);
     
     if (error) {
-      toast.error('Échec de la suppression des séances');
+      toast.error("Échec de l'annulation des séances");
     } else {
-      toast.success('Toutes les occurrences ont été supprimées');
+      toast.success('Toutes les occurrences ont été annulées');
       onBookingChange();
     }
   }
@@ -223,7 +217,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
   const hasParticipants = session.bookings.length > 0;
 
   return (
-    <Card className={`group transition-all duration-300 hover:shadow-card animate-fade-in ${isBooked && !isPast ? 'ring-2 ring-primary/50' : ''} ${isPast && showPastStatus ? 'opacity-60 grayscale' : ''}`}>
+    <Card className={`group transition-all duration-300 hover:shadow-card animate-fade-in ${isBooked && !isPast && !isCancelled ? 'ring-2 ring-primary/50' : ''} ${isPast && showPastStatus ? 'opacity-60 grayscale' : ''} ${isCancelled ? 'opacity-70' : ''}`}>
       <CardHeader className="pb-3 px-4 sm:px-6">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -248,18 +242,23 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
             </div>
           </div>
           <div className="flex flex-col items-end gap-1">
-            {isFull && !isPast && (
+            {isCancelled && (
+              <Badge className="text-xs flex-shrink-0 bg-[#F1C40F] text-black hover:bg-[#F1C40F]/80">
+                Annulé
+              </Badge>
+            )}
+            {!isCancelled && isFull && !isPast && (
               <Badge variant="destructive" className="text-xs flex-shrink-0">
                 Complet
               </Badge>
             )}
-            {isBooked && !isPast && (
+            {isBooked && !isPast && !isCancelled && (
               <Badge className="bg-success text-success-foreground text-xs flex-shrink-0">
                 <Check className="h-3 w-3 mr-1" />
                 Réservé
               </Badge>
             )}
-            {isPast && showPastStatus && (
+            {isPast && showPastStatus && !isCancelled && (
               <Badge variant="secondary" className="text-muted-foreground text-xs flex-shrink-0">
                 Passée
               </Badge>
@@ -334,7 +333,11 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
       </CardContent>
       
       <CardFooter className="flex-col gap-2 px-4 sm:px-6">
-        {isPast && showPastStatus ? (
+        {isCancelled ? (
+          <Button variant="secondary" size="sm" className="w-full" disabled>
+            Séance annulée
+          </Button>
+        ) : isPast && showPastStatus ? (
           <Button variant="secondary" size="sm" className="w-full" disabled>
             Séance terminée
           </Button>
@@ -376,22 +379,22 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
               )
             )}
             
-            {canDelete && !isPast && (
+            {canDelete && !isPast && !isCancelled && (
               (isRecurring || isRecurringInstance) ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
-                      variant="destructive" 
+                      variant="outline" 
                       size="sm"
-                      className="w-full" 
+                      className="w-full border-[#F1C40F] text-[#F1C40F] hover:bg-[#F1C40F]/10" 
                       disabled={isDeletingSession}
                     >
                       {isDeletingSession ? (
                         <Loader2 className="h-3 w-3 animate-spin" />
                       ) : (
                         <>
-                          <Trash2 className="h-3 w-3 mr-1" />
-                          Supprimer
+                          <X className="h-3 w-3 mr-1" />
+                          Annuler
                         </>
                       )}
                     </Button>
@@ -405,20 +408,20 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Supprimer cette occurrence ?</AlertDialogTitle>
+                          <AlertDialogTitle>Annuler cette occurrence ?</AlertDialogTitle>
                           <AlertDialogDescription>
                             {hasParticipants 
                               ? 'Des participants sont inscrits. Ils seront notifiés de l\'annulation.'
-                              : 'Cette action supprimera uniquement cette occurrence.'}
+                              : 'Cette action annulera uniquement cette occurrence.'}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogCancel>Retour</AlertDialogCancel>
                           <AlertDialogAction 
-                            onClick={handleDeleteSession}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            onClick={handleCancelSession}
+                            className="bg-[#F1C40F] text-black hover:bg-[#F1C40F]/80"
                           >
-                            Supprimer
+                            Annuler la séance
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -426,24 +429,24 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                          <span className="text-destructive">Toutes les occurrences futures</span>
+                          <span className="text-[#F1C40F]">Toutes les occurrences futures</span>
                         </DropdownMenuItem>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>⚠️ Supprimer toutes les occurrences ?</AlertDialogTitle>
+                          <AlertDialogTitle>⚠️ Annuler toutes les occurrences ?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Cette action supprimera la séance principale et toutes ses occurrences. 
+                            Cette action annulera la séance principale et toutes ses occurrences. 
                             Les participants inscrits seront notifiés.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogCancel>Retour</AlertDialogCancel>
                           <AlertDialogAction 
-                            onClick={handleDeleteAllRecurring}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            onClick={handleCancelAllRecurring}
+                            className="bg-[#F1C40F] text-black hover:bg-[#F1C40F]/80"
                           >
-                            Tout supprimer
+                            Tout annuler
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -454,17 +457,17 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button 
-                      variant="destructive" 
+                      variant="outline" 
                       size="sm"
-                      className="w-full" 
+                      className="w-full border-[#F1C40F] text-[#F1C40F] hover:bg-[#F1C40F]/10" 
                       disabled={isDeletingSession}
                     >
                       {isDeletingSession ? (
                         <Loader2 className="h-3 w-3 animate-spin" />
                       ) : (
                         <>
-                          <Trash2 className="h-3 w-3 mr-1" />
-                          Supprimer la séance
+                          <X className="h-3 w-3 mr-1" />
+                          Annuler la séance
                         </>
                       )}
                     </Button>
@@ -472,21 +475,21 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>
-                        {hasParticipants ? '⚠️ Supprimer la séance ?' : 'Supprimer la séance ?'}
+                        {hasParticipants ? '⚠️ Annuler la séance ?' : 'Annuler la séance ?'}
                       </AlertDialogTitle>
                       <AlertDialogDescription>
                         {hasParticipants 
-                          ? 'Des participants sont inscrits à cette séance. La supprimer annulera leurs réservations et les notifiera.'
-                          : 'Voulez-vous vraiment supprimer cette séance ? Cette action est irréversible.'}
+                          ? 'Des participants sont inscrits à cette séance. L\'annuler les notifiera.'
+                          : 'Voulez-vous vraiment annuler cette séance ?'}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Annuler</AlertDialogCancel>
+                      <AlertDialogCancel>Retour</AlertDialogCancel>
                       <AlertDialogAction 
-                        onClick={handleDeleteSession}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={handleCancelSession}
+                        className="bg-[#F1C40F] text-black hover:bg-[#F1C40F]/80"
                       >
-                        Supprimer
+                        Annuler la séance
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
