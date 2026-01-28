@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import ProfileAvatarUpload from './ProfileAvatarUpload';
+import NotificationBell from './NotificationBell';
 
 interface Profile {
   avatar_url: string | null;
@@ -77,13 +78,14 @@ export default function Header() {
           </nav>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           {isAdmin && (
             <Badge variant="secondary" className="hidden sm:flex">
               Administrateur
             </Badge>
           )}
           
+          <NotificationBell />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
