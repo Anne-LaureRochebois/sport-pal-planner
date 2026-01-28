@@ -74,14 +74,14 @@ serve(async (req: Request) => {
         throw error;
       }
 
-      // Get roles for all users
+      // Get all roles for all users
       const { data: roles } = await adminClient
         .from("user_roles")
         .select("user_id, role");
 
       const usersWithRoles = profiles?.map((profile) => ({
         ...profile,
-        role: roles?.find((r) => r.user_id === profile.user_id)?.role || "member",
+        roles: roles?.filter((r) => r.user_id === profile.user_id).map((r) => r.role) || [],
       }));
 
       return new Response(JSON.stringify(usersWithRoles), {
@@ -158,6 +158,61 @@ serve(async (req: Request) => {
       }
 
       console.log(`User ${targetUserId} email updated to ${email} by admin ${userId}`);
+
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // PUT: Update user roles
+    if (method === "PUT") {
+      const { userId: targetUserId, roles } = await req.json();
+      
+      if (!targetUserId || !Array.isArray(roles)) {
+        return new Response(JSON.stringify({ error: "userId et roles requis" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+
+      // Prevent removing own admin role
+      if (targetUserId === userId && !roles.includes("admin")) {
+        return new Response(JSON.stringify({ error: "Vous ne pouvez pas retirer votre propre rôle admin" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+
+      // Delete existing roles for this user
+      const { error: deleteError } = await adminClient
+        .from("user_roles")
+        .delete()
+        .eq("user_id", targetUserId);
+
+      if (deleteError) {
+        console.error("Error deleting user roles:", deleteError);
+        throw deleteError;
+      }
+
+      // Insert new roles
+      if (roles.length > 0) {
+        const rolesToInsert = roles.map((role: string) => ({
+          user_id: targetUserId,
+          role: role,
+        }));
+
+        const { error: insertError } = await adminClient
+          .from("user_roles")
+          .insert(rolesToInsert);
+
+        if (insertError) {
+          console.error("Error inserting user roles:", insertError);
+          throw insertError;
+        }
+      }
+
+      console.log(`User ${targetUserId} roles updated to [${roles.join(", ")}] by admin ${userId}`);
 
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
