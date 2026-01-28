@@ -8,7 +8,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { UserPlus, Loader2, Copy, Check } from 'lucide-react';
 
-export default function InviteUserDialog() {
+interface InviteUserDialogProps {
+  trigger?: React.ReactNode;
+}
+
+export default function InviteUserDialog({ trigger }: InviteUserDialogProps) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,10 +71,12 @@ export default function InviteUserDialog() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full sm:w-auto">
-          <UserPlus className="h-4 w-4 mr-2" />
-          Inviter
-        </Button>
+        {trigger || (
+          <Button variant="outline" className="w-full sm:w-auto">
+            <UserPlus className="h-4 w-4 mr-2" />
+            Inviter
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-[95vw] sm:max-w-[400px]">
         <DialogHeader>
