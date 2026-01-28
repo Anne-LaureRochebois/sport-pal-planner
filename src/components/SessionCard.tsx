@@ -248,6 +248,11 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
             </div>
           </div>
           <div className="flex flex-col items-end gap-1">
+            {isFull && !isPast && (
+              <Badge variant="destructive" className="text-xs flex-shrink-0">
+                Complet
+              </Badge>
+            )}
             {isBooked && !isPast && (
               <Badge className="bg-success text-success-foreground text-xs flex-shrink-0">
                 <Check className="h-3 w-3 mr-1" />
