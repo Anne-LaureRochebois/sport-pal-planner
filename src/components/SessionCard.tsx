@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { Calendar, Clock, MapPin, Users, Loader2, Check, X } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,11 +44,24 @@ const sportEmojis: Record<string, string> = {
   tennis: '🎾',
   volleyball: '🏐',
   badminton: '🏸',
-  running: '🏃',
-  swimming: '🏊',
-  cycling: '🚴',
+  course: '🏃',
+  natation: '🏊',
+  cyclisme: '🚴',
   yoga: '🧘',
   default: '🎯',
+};
+
+const sportLabels: Record<string, string> = {
+  football: 'Football',
+  basketball: 'Basketball',
+  tennis: 'Tennis',
+  volleyball: 'Volleyball',
+  badminton: 'Badminton',
+  course: 'Course',
+  natation: 'Natation',
+  cyclisme: 'Cyclisme',
+  yoga: 'Yoga',
+  autre: 'Autre',
 };
 
 export default function SessionCard({ session, onBookingChange }: SessionCardProps) {
@@ -58,6 +72,7 @@ export default function SessionCard({ session, onBookingChange }: SessionCardPro
   const spotsLeft = session.max_participants - session.bookings.length;
   const isFull = spotsLeft <= 0;
   const sportEmoji = sportEmojis[session.sport_type.toLowerCase()] || sportEmojis.default;
+  const sportLabel = sportLabels[session.sport_type.toLowerCase()] || session.sport_type;
 
   async function handleBook() {
     if (!user) return;
@@ -70,9 +85,9 @@ export default function SessionCard({ session, onBookingChange }: SessionCardPro
     setIsLoading(false);
     
     if (error) {
-      toast.error('Failed to book session');
+      toast.error('Échec de la réservation');
     } else {
-      toast.success('Session booked!');
+      toast.success('Séance réservée !');
       onBookingChange();
     }
   }
@@ -90,9 +105,9 @@ export default function SessionCard({ session, onBookingChange }: SessionCardPro
     setIsLoading(false);
     
     if (error) {
-      toast.error('Failed to cancel booking');
+      toast.error("Échec de l'annulation");
     } else {
-      toast.success('Booking cancelled');
+      toast.success('Réservation annulée');
       onBookingChange();
     }
   }
@@ -106,14 +121,14 @@ export default function SessionCard({ session, onBookingChange }: SessionCardPro
             <div>
               <h3 className="font-display font-semibold text-lg leading-tight">{session.title}</h3>
               <Badge variant="secondary" className="mt-1 capitalize">
-                {session.sport_type}
+                {sportLabel}
               </Badge>
             </div>
           </div>
           {isBooked && (
             <Badge className="bg-success text-success-foreground">
               <Check className="h-3 w-3 mr-1" />
-              Booked
+              Réservé
             </Badge>
           )}
         </div>
@@ -127,7 +142,7 @@ export default function SessionCard({ session, onBookingChange }: SessionCardPro
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="h-4 w-4 text-primary" />
-            <span>{format(parseISO(session.session_date), 'EEEE, MMMM d, yyyy')}</span>
+            <span>{format(parseISO(session.session_date), 'EEEE d MMMM yyyy', { locale: fr })}</span>
           </div>
           
           <div className="flex items-center gap-2 text-muted-foreground">
@@ -143,14 +158,14 @@ export default function SessionCard({ session, onBookingChange }: SessionCardPro
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-primary" />
             <span className={`${isFull ? 'text-destructive' : 'text-muted-foreground'}`}>
-              {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left of {session.max_participants}
+              {spotsLeft} {spotsLeft === 1 ? 'place restante' : 'places restantes'} sur {session.max_participants}
             </span>
           </div>
         </div>
         
         {session.bookings.length > 0 && (
           <div className="flex items-center gap-1 pt-2">
-            <span className="text-xs text-muted-foreground mr-2">Participants:</span>
+            <span className="text-xs text-muted-foreground mr-2">Participants :</span>
             <div className="flex -space-x-2">
               {session.bookings.slice(0, 5).map((booking) => (
                 <Tooltip key={booking.id}>
@@ -191,7 +206,7 @@ export default function SessionCard({ session, onBookingChange }: SessionCardPro
             ) : (
               <>
                 <X className="h-4 w-4 mr-2" />
-                Cancel Booking
+                Annuler la réservation
               </>
             )}
           </Button>
@@ -204,9 +219,9 @@ export default function SessionCard({ session, onBookingChange }: SessionCardPro
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : isFull ? (
-              'Session Full'
+              'Séance complète'
             ) : (
-              'Book This Session'
+              'Réserver cette séance'
             )}
           </Button>
         )}

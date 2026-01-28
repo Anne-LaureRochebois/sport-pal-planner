@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .maybeSingle();
 
     if (!invite) {
-      return { error: new Error('Invalid or expired invite code. Make sure you use the email address that was invited.') };
+      return { error: new Error("Code d'invitation invalide ou expiré. Assurez-vous d'utiliser l'adresse email qui a été invitée.") };
     }
 
     const redirectUrl = `${window.location.origin}/`;

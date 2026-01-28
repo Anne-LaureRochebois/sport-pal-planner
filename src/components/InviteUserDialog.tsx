@@ -36,13 +36,13 @@ export default function InviteUserDialog() {
     
     if (error) {
       if (error.code === '23505') {
-        toast.error('This email has already been invited');
+        toast.error('Cet email a déjà été invité');
       } else {
-        toast.error('Failed to create invite');
+        toast.error("Échec de la création de l'invitation");
       }
     } else {
       setInviteCode(data.invite_code);
-      toast.success('Invite created!');
+      toast.success('Invitation créée !');
     }
   }
 
@@ -50,7 +50,7 @@ export default function InviteUserDialog() {
     if (inviteCode) {
       navigator.clipboard.writeText(inviteCode);
       setCopied(true);
-      toast.success('Invite code copied!');
+      toast.success("Code d'invitation copié !");
       setTimeout(() => setCopied(false), 2000);
     }
   }
@@ -69,39 +69,39 @@ export default function InviteUserDialog() {
       <DialogTrigger asChild>
         <Button variant="outline">
           <UserPlus className="h-4 w-4 mr-2" />
-          Invite User
+          Inviter un utilisateur
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle className="font-display">Invite New User</DialogTitle>
+          <DialogTitle className="font-display">Inviter un nouvel utilisateur</DialogTitle>
         </DialogHeader>
         
         {!inviteCode ? (
           <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label htmlFor="invite-email">Email Address</Label>
+              <Label htmlFor="invite-email">Adresse email</Label>
               <Input
                 id="invite-email"
                 type="email"
-                placeholder="friend@example.com"
+                placeholder="ami@exemple.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
               <p className="text-xs text-muted-foreground">
-                The user will need to sign up with this exact email
+                L'utilisateur devra s'inscrire avec cette adresse email exacte
               </p>
             </div>
             
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Generate Invite'}
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Générer l'invitation"}
             </Button>
           </form>
         ) : (
           <div className="space-y-4 mt-4">
             <div className="p-4 rounded-lg bg-secondary">
-              <p className="text-sm text-muted-foreground mb-2">Share this invite code with {email}:</p>
+              <p className="text-sm text-muted-foreground mb-2">Partagez ce code d'invitation avec {email} :</p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 p-2 rounded bg-background font-mono text-sm break-all">
                   {inviteCode}
@@ -112,7 +112,7 @@ export default function InviteUserDialog() {
               </div>
             </div>
             <Button variant="outline" className="w-full" onClick={() => handleOpenChange(false)}>
-              Done
+              Terminé
             </Button>
           </div>
         )}
