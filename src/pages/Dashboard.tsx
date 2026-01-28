@@ -3,12 +3,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/Header';
 import SessionCard from '@/components/SessionCard';
+import SessionCalendarView from '@/components/SessionCalendarView';
 import CreateSessionDialog from '@/components/CreateSessionDialog';
-import { Loader2, Calendar, Inbox, X } from 'lucide-react';
+import { Loader2, Calendar, Inbox, X, List, CalendarDays } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Session {
   id: string;
@@ -52,6 +55,9 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [filterSport, setFilterSport] = useState('all');
   const [filterDate, setFilterDate] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
 
   async function fetchSessions() {
     const { data, error } = await supabase
@@ -95,6 +101,12 @@ export default function Dashboard() {
   const mySessions = sessions.filter(s => 
     s.bookings.some(b => b.user_id === user?.id)
   );
+  
+  // For calendar view: filter by sport only, show all dates
+  const calendarFilteredSessions = sessions.filter(s => {
+    if (filterSport !== 'all' && s.sport_type !== filterSport) return false;
+    return true;
+  });
   
   const hasActiveFilters = filterSport !== 'all' || filterDate !== '';
   
@@ -143,52 +155,100 @@ export default function Dashboard() {
           </TabsList>
           
           <TabsContent value="upcoming">
-            {/* Filters */}
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              <Select value={filterSport} onValueChange={setFilterSport}>
-                <SelectTrigger className="h-8 w-[140px] text-xs bg-background">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-popover">
-                  {sportTypes.map((sport) => (
-                    <SelectItem key={sport.value} value={sport.value} className="text-xs">
-                      {sport.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Filters and View Toggle */}
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <Select value={filterSport} onValueChange={setFilterSport}>
+                  <SelectTrigger className="h-8 w-[140px] text-xs bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover">
+                    {sportTypes.map((sport) => (
+                      <SelectItem key={sport.value} value={sport.value} className="text-xs">
+                        {sport.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                {viewMode === 'list' && (
+                  <Input
+                    type="date"
+                    value={filterDate}
+                    onChange={(e) => setFilterDate(e.target.value)}
+                    className="h-8 w-[140px] text-xs bg-background"
+                  />
+                )}
+                
+                {hasActiveFilters && (
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 px-2 text-xs">
+                    <X className="h-3 w-3 mr-1" />
+                    Effacer
+                  </Button>
+                )}
+              </div>
               
-              <Input
-                type="date"
-                value={filterDate}
-                onChange={(e) => setFilterDate(e.target.value)}
-                className="h-8 w-[140px] text-xs bg-background"
-              />
-              
-              {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 px-2 text-xs">
-                  <X className="h-3 w-3 mr-1" />
-                  Effacer
-                </Button>
-              )}
+              <ToggleGroup 
+                type="single" 
+                value={viewMode} 
+                onValueChange={(value) => value && setViewMode(value as 'list' | 'calendar')}
+                className="bg-muted rounded-lg p-0.5"
+              >
+                <ToggleGroupItem value="list" aria-label="Vue liste" className="h-7 px-2 data-[state=on]:bg-background">
+                  <List className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-1 text-xs">Liste</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem value="calendar" aria-label="Vue calendrier" className="h-7 px-2 data-[state=on]:bg-background">
+                  <CalendarDays className="h-4 w-4" />
+                  <span className="hidden sm:inline ml-1 text-xs">Calendrier</span>
+                </ToggleGroupItem>
+              </ToggleGroup>
             </div>
             
-            {filteredUpcomingSessions.length === 0 ? (
-              <EmptyState 
-                title={hasActiveFilters ? "Aucune séance trouvée" : "Aucune séance à venir"}
-                description={hasActiveFilters ? "Modifiez vos filtres pour voir plus de séances." : "Créez la première séance pour commencer !"}
-              />
+            {viewMode === 'list' ? (
+              filteredUpcomingSessions.length === 0 ? (
+                <EmptyState 
+                  title={hasActiveFilters ? "Aucune séance trouvée" : "Aucune séance à venir"}
+                  description={hasActiveFilters ? "Modifiez vos filtres pour voir plus de séances." : "Créez la première séance pour commencer !"}
+                />
+              ) : (
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {filteredUpcomingSessions.map((session) => (
+                    <SessionCard 
+                      key={session.id} 
+                      session={session} 
+                      onBookingChange={fetchSessions}
+                    />
+                  ))}
+                </div>
+              )
             ) : (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredUpcomingSessions.map((session) => (
-                  <SessionCard 
-                    key={session.id} 
-                    session={session} 
-                    onBookingChange={fetchSessions}
-                  />
-                ))}
-              </div>
+              <SessionCalendarView
+                sessions={calendarFilteredSessions}
+                currentMonth={calendarMonth}
+                onMonthChange={setCalendarMonth}
+                onSessionClick={(session) => setSelectedSession(session)}
+                userId={user?.id}
+              />
             )}
+            
+            {/* Session Detail Dialog from Calendar */}
+            <Dialog open={!!selectedSession} onOpenChange={(open) => !open && setSelectedSession(null)}>
+              <DialogContent className="max-w-md p-0 overflow-hidden">
+                <DialogHeader className="sr-only">
+                  <DialogTitle>Détails de la séance</DialogTitle>
+                </DialogHeader>
+                {selectedSession && (
+                  <SessionCard 
+                    session={selectedSession} 
+                    onBookingChange={() => {
+                      fetchSessions();
+                      setSelectedSession(null);
+                    }}
+                  />
+                )}
+              </DialogContent>
+            </Dialog>
           </TabsContent>
           
           <TabsContent value="my-sessions">
