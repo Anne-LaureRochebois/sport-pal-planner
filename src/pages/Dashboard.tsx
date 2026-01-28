@@ -21,6 +21,9 @@ interface Session {
   end_time: string;
   max_participants: number;
   created_by: string | null;
+  recurrence_type: string | null;
+  parent_session_id: string | null;
+  is_recurring_instance: boolean;
   bookings: {
     id: string;
     user_id: string;

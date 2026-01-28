@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Calendar, Clock, MapPin, Users, Loader2, Check, X, Trash2, User } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Loader2, Check, X, Trash2, User, Repeat } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -44,6 +50,9 @@ interface Session {
   max_participants: number;
   created_by: string | null;
   bookings: Booking[];
+  recurrence_type?: string | null;
+  parent_session_id?: string | null;
+  is_recurring_instance?: boolean;
 }
 
 interface SessionCardProps {
@@ -111,6 +120,8 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
   const sportEmoji = sportEmojis[session.sport_type.toLowerCase()] || sportEmojis.default;
   const sportLabel = sportLabels[session.sport_type.toLowerCase()] || session.sport_type;
   const creatorName = creator?.full_name || creator?.email || 'Inconnu';
+  const isRecurring = session.recurrence_type && session.recurrence_type !== 'none';
+  const isRecurringInstance = session.is_recurring_instance || false;
 
   async function handleBook() {
     if (!user) return;
@@ -174,6 +185,41 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
     }
   }
 
+  async function handleDeleteAllRecurring() {
+    if (!user || !canDelete) return;
+    
+    setIsDeletingSession(true);
+    
+    // Get parent session ID
+    const parentId = session.parent_session_id || session.id;
+    
+    // Delete all child sessions first
+    const { data: childSessions } = await supabase
+      .from('sessions')
+      .select('id')
+      .eq('parent_session_id', parentId);
+    
+    if (childSessions) {
+      for (const child of childSessions) {
+        await supabase.from('bookings').delete().eq('session_id', child.id);
+      }
+      await supabase.from('sessions').delete().eq('parent_session_id', parentId);
+    }
+    
+    // Delete bookings and the parent session
+    await supabase.from('bookings').delete().eq('session_id', parentId);
+    const { error } = await supabase.from('sessions').delete().eq('id', parentId);
+    
+    setIsDeletingSession(false);
+    
+    if (error) {
+      toast.error('Échec de la suppression des séances');
+    } else {
+      toast.success('Toutes les occurrences ont été supprimées');
+      onBookingChange();
+    }
+  }
+
   const hasParticipants = session.bookings.length > 0;
 
   return (
@@ -184,22 +230,36 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
             <span className="text-2xl sm:text-3xl flex-shrink-0">{sportEmoji}</span>
             <div className="min-w-0">
               <h3 className="font-display font-semibold text-base sm:text-lg leading-tight truncate">{session.title}</h3>
-              <Badge variant="secondary" className="mt-1 capitalize text-xs">
-                {sportLabel}
-              </Badge>
+              <div className="flex items-center gap-1 mt-1">
+                <Badge variant="secondary" className="capitalize text-xs">
+                  {sportLabel}
+                </Badge>
+                {(isRecurring || isRecurringInstance) && (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Badge variant="outline" className="text-xs gap-1 px-1.5">
+                        <Repeat className="h-3 w-3" />
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>Séance récurrente</TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
             </div>
           </div>
-          {isBooked && !isPast && (
-            <Badge className="bg-success text-success-foreground text-xs flex-shrink-0">
-              <Check className="h-3 w-3 mr-1" />
-              Réservé
-            </Badge>
-          )}
-          {isPast && showPastStatus && (
-            <Badge variant="secondary" className="text-muted-foreground text-xs flex-shrink-0">
-              Passée
-            </Badge>
-          )}
+          <div className="flex flex-col items-end gap-1">
+            {isBooked && !isPast && (
+              <Badge className="bg-success text-success-foreground text-xs flex-shrink-0">
+                <Check className="h-3 w-3 mr-1" />
+                Réservé
+              </Badge>
+            )}
+            {isPast && showPastStatus && (
+              <Badge variant="secondary" className="text-muted-foreground text-xs flex-shrink-0">
+                Passée
+              </Badge>
+            )}
+          </div>
         </div>
       </CardHeader>
       
@@ -312,46 +372,121 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
             )}
             
             {canDelete && !isPast && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button 
-                    variant="destructive" 
-                    size="sm"
-                    className="w-full" 
-                    disabled={isDeletingSession}
-                  >
-                    {isDeletingSession ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                    ) : (
-                      <>
-                        <Trash2 className="h-3 w-3 mr-1" />
-                        Supprimer la séance
-                      </>
-                    )}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      {hasParticipants ? '⚠️ Supprimer la séance ?' : 'Supprimer la séance ?'}
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {hasParticipants 
-                        ? 'Des participants sont inscrits à cette séance. La supprimer annulera leurs réservations et les notifiera.'
-                        : 'Voulez-vous vraiment supprimer cette séance ? Cette action est irréversible.'}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={handleDeleteSession}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              (isRecurring || isRecurringInstance) ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      className="w-full" 
+                      disabled={isDeletingSession}
                     >
-                      Supprimer
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                      {isDeletingSession ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <>
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Supprimer
+                        </>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <span>Cette occurrence uniquement</span>
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Supprimer cette occurrence ?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {hasParticipants 
+                              ? 'Des participants sont inscrits. Ils seront notifiés de l\'annulation.'
+                              : 'Cette action supprimera uniquement cette occurrence.'}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={handleDeleteSession}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Supprimer
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <span className="text-destructive">Toutes les occurrences futures</span>
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>⚠️ Supprimer toutes les occurrences ?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Cette action supprimera la séance principale et toutes ses occurrences. 
+                            Les participants inscrits seront notifiés.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={handleDeleteAllRecurring}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Tout supprimer
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      className="w-full" 
+                      disabled={isDeletingSession}
+                    >
+                      {isDeletingSession ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <>
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Supprimer la séance
+                        </>
+                      )}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        {hasParticipants ? '⚠️ Supprimer la séance ?' : 'Supprimer la séance ?'}
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {hasParticipants 
+                          ? 'Des participants sont inscrits à cette séance. La supprimer annulera leurs réservations et les notifiera.'
+                          : 'Voulez-vous vraiment supprimer cette séance ? Cette action est irréversible.'}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Annuler</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={handleDeleteSession}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Supprimer
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )
             )}
           </>
         )}
