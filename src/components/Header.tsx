@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { LogOut, UserPlus } from 'lucide-react';
+import { LogOut, UserPlus, User, Calendar } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,6 +25,8 @@ interface Profile {
 export default function Header() {
   const { user, isAdmin, signOut } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
   
   async function fetchProfile() {
     if (!user) return;
@@ -50,11 +53,38 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="font-display text-xl font-bold text-primary">
-            SportSlot
-          </h1>
-          <span className="text-2xl">🏃</span>
+        <div className="flex items-center gap-6">
+          <div 
+            className="flex items-center gap-3 cursor-pointer" 
+            onClick={() => navigate('/')}
+          >
+            <h1 className="font-display text-xl font-bold text-primary">
+              SportSlot
+            </h1>
+            <span className="text-2xl">🏃</span>
+          </div>
+          
+          {/* Navigation links */}
+          <nav className="hidden sm:flex items-center gap-1">
+            <Button
+              variant={location.pathname === '/' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => navigate('/')}
+              className="gap-2"
+            >
+              <Calendar className="h-4 w-4" />
+              Séances
+            </Button>
+            <Button
+              variant={location.pathname === '/account' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => navigate('/account')}
+              className="gap-2"
+            >
+              <User className="h-4 w-4" />
+              Compte
+            </Button>
+          </nav>
         </div>
         
         <div className="flex items-center gap-4">
@@ -89,6 +119,20 @@ export default function Header() {
                 </div>
               </div>
               <DropdownMenuSeparator />
+              
+              {/* Mobile navigation */}
+              <div className="sm:hidden">
+                <DropdownMenuItem onClick={() => navigate('/')} className="cursor-pointer">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  <span>Séances</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/account')} className="cursor-pointer">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Compte</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </div>
+              
               {isAdmin && (
                 <InviteUserDialog 
                   trigger={

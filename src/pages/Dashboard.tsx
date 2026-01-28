@@ -4,8 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/Header';
 import SessionCard from '@/components/SessionCard';
 import CreateSessionDialog from '@/components/CreateSessionDialog';
-import AdminUsersPanel from '@/components/AdminUsersPanel';
-import { Loader2, Calendar, Inbox, Users, X } from 'lucide-react';
+import { Loader2, Calendar, Inbox, X } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -128,7 +127,7 @@ export default function Dashboard() {
         </div>
         
         <Tabs defaultValue="upcoming" className="w-full">
-          <TabsList className={`mb-6 w-full sm:w-auto grid ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'} sm:inline-flex`}>
+          <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
             <TabsTrigger value="upcoming" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden xs:inline">Toutes les</span> Séances
@@ -137,12 +136,6 @@ export default function Dashboard() {
               <Inbox className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden xs:inline">Mes</span> Réservations
             </TabsTrigger>
-            {isAdmin && (
-              <TabsTrigger value="users" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-                <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                Utilisateurs
-              </TabsTrigger>
-            )}
           </TabsList>
           
           <TabsContent value="upcoming">
@@ -213,12 +206,6 @@ export default function Dashboard() {
               </div>
             )}
           </TabsContent>
-          
-          {isAdmin && (
-            <TabsContent value="users">
-              <AdminUsersPanel />
-            </TabsContent>
-          )}
         </Tabs>
       </main>
     </div>
