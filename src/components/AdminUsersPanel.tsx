@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -20,9 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { Users, MoreVertical, Trash2, Mail, RefreshCw, Loader2, Copy, Check } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { Users, MoreVertical, Trash2, Mail, RefreshCw, Loader2, Copy, Check, Shield } from 'lucide-react';
 
 interface User {
   user_id: string;
@@ -30,8 +30,13 @@ interface User {
   email: string;
   avatar_url: string | null;
   created_at: string;
-  role: 'admin' | 'member';
+  roles: ('admin' | 'member')[];
 }
+
+const availableRoles = [
+  { value: 'admin', label: 'Administrateur' },
+  { value: 'member', label: 'Membre' },
+];
 
 export default function AdminUsersPanel() {
   const [users, setUsers] = useState<User[]>([]);
@@ -51,17 +56,15 @@ export default function AdminUsersPanel() {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteCode, setInviteCode] = useState('');
   const [copied, setCopied] = useState(false);
+  
+  // Roles dialog state
+  const [rolesDialogOpen, setRolesDialogOpen] = useState(false);
+  const [editingRolesUser, setEditingRolesUser] = useState<User | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
   async function fetchUsers() {
     setLoading(true);
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-      
-      if (!token) {
-        throw new Error('Non authentifié');
-      }
-
       const response = await supabase.functions.invoke('admin-users', {
         method: 'GET',
       });
@@ -129,6 +132,36 @@ export default function AdminUsersPanel() {
     }
   }
 
+  async function handleUpdateRoles() {
+    if (!editingRolesUser) return;
+    
+    if (selectedRoles.length === 0) {
+      toast.error('Sélectionnez au moins un rôle');
+      return;
+    }
+    
+    setActionLoading(editingRolesUser.user_id);
+    try {
+      const response = await supabase.functions.invoke('admin-users', {
+        method: 'PUT',
+        body: { userId: editingRolesUser.user_id, roles: selectedRoles },
+      });
+
+      if (response.error) throw response.error;
+      
+      toast.success('Rôles mis à jour');
+      setRolesDialogOpen(false);
+      setEditingRolesUser(null);
+      setSelectedRoles([]);
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error updating roles:', error);
+      toast.error(error.message || 'Erreur lors de la mise à jour');
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
   async function handleResendCredentials(user: User) {
     setActionLoading(user.user_id);
     try {
@@ -147,7 +180,7 @@ export default function AdminUsersPanel() {
       }
     } catch (error: any) {
       console.error('Error resending credentials:', error);
-      toast.error(error.message || 'Erreur lors de l\'envoi');
+      toast.error(error.message || "Erreur lors de l'envoi");
     } finally {
       setActionLoading(null);
     }
@@ -169,6 +202,20 @@ export default function AdminUsersPanel() {
   function openDeleteDialog(user: User) {
     setDeletingUser(user);
     setDeleteDialogOpen(true);
+  }
+
+  function openRolesDialog(user: User) {
+    setEditingRolesUser(user);
+    setSelectedRoles(user.roles || ['member']);
+    setRolesDialogOpen(true);
+  }
+
+  function toggleRole(role: string) {
+    setSelectedRoles(prev => 
+      prev.includes(role) 
+        ? prev.filter(r => r !== role)
+        : [...prev, role]
+    );
   }
 
   if (loading) {
@@ -209,11 +256,11 @@ export default function AdminUsersPanel() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-medium truncate">
                       {user.full_name || user.email}
                     </p>
-                    {user.role === 'admin' && (
+                    {user.roles?.includes('admin') && (
                       <Badge variant="secondary" className="text-xs flex-shrink-0">
                         Admin
                       </Badge>
@@ -239,6 +286,10 @@ export default function AdminUsersPanel() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-popover">
+                  <DropdownMenuItem onClick={() => openRolesDialog(user)}>
+                    <Shield className="h-4 w-4 mr-2" />
+                    Modifier les rôles
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => openEditDialog(user)}>
                     <Mail className="h-4 w-4 mr-2" />
                     Modifier l'email
@@ -266,6 +317,43 @@ export default function AdminUsersPanel() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Roles Dialog */}
+      <Dialog open={rolesDialogOpen} onOpenChange={setRolesDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier les rôles</DialogTitle>
+            <DialogDescription>
+              Sélectionnez les rôles pour {editingRolesUser?.full_name || editingRolesUser?.email}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            {availableRoles.map((role) => (
+              <div key={role.value} className="flex items-center space-x-3">
+                <Checkbox
+                  id={`role-${role.value}`}
+                  checked={selectedRoles.includes(role.value)}
+                  onCheckedChange={() => toggleRole(role.value)}
+                />
+                <Label htmlFor={`role-${role.value}`} className="cursor-pointer">
+                  {role.label}
+                </Label>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRolesDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button 
+              onClick={handleUpdateRoles}
+              disabled={selectedRoles.length === 0 || actionLoading !== null}
+            >
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enregistrer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Email Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
