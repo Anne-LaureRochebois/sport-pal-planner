@@ -39,28 +39,21 @@ interface SessionCardProps {
 }
 
 const sportEmojis: Record<string, string> = {
-  football: '⚽',
-  basketball: '🏀',
-  tennis: '🎾',
-  volleyball: '🏐',
-  badminton: '🏸',
-  course: '🏃',
+  musculation: '💪',
+  'plein-air': '🌳',
+  escalade: '🧗',
   natation: '🏊',
-  cyclisme: '🚴',
-  yoga: '🧘',
+  running: '🏃',
+  autre: '🎯',
   default: '🎯',
 };
 
 const sportLabels: Record<string, string> = {
-  football: 'Football',
-  basketball: 'Basketball',
-  tennis: 'Tennis',
-  volleyball: 'Volleyball',
-  badminton: 'Badminton',
-  course: 'Course',
+  musculation: 'Musculation',
+  'plein-air': 'Séance plein air',
+  escalade: 'Escalade',
   natation: 'Natation',
-  cyclisme: 'Cyclisme',
-  yoga: 'Yoga',
+  running: 'Running',
   autre: 'Autre',
 };
 
