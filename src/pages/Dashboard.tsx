@@ -24,6 +24,7 @@ interface Session {
   recurrence_type: string | null;
   parent_session_id: string | null;
   is_recurring_instance: boolean;
+  is_cancelled: boolean;
   bookings: {
     id: string;
     user_id: string;
