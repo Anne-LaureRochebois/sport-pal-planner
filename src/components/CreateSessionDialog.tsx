@@ -36,7 +36,7 @@ export default function CreateSessionDialog({ onSessionCreated }: CreateSessionD
     session_date: '',
     start_time: '',
     end_time: '',
-    max_participants: '10',
+    max_participants: '1',
   });
 
   async function handleSubmit(e: React.FormEvent) {
@@ -80,7 +80,7 @@ export default function CreateSessionDialog({ onSessionCreated }: CreateSessionD
         session_date: '',
         start_time: '',
         end_time: '',
-        max_participants: '10',
+        max_participants: '1',
       });
       onSessionCreated();
     }
