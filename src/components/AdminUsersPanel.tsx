@@ -22,7 +22,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { Users, MoreVertical, Trash2, Mail, RefreshCw, Loader2, Copy, Check, Shield } from 'lucide-react';
+import { Users, MoreVertical, Trash2, Mail, RefreshCw, Loader2, Copy, Check, Shield, UserPlus } from 'lucide-react';
+import InviteUserDialog from './InviteUserDialog';
 
 interface User {
   user_id: string;
@@ -232,14 +233,24 @@ export default function AdminUsersPanel() {
     <>
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Users className="h-5 w-5" />
               Utilisateurs ({users.length})
             </CardTitle>
-            <Button variant="ghost" size="sm" onClick={fetchUsers}>
-              <RefreshCw className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <InviteUserDialog 
+                trigger={
+                  <Button size="sm" className="gap-2">
+                    <UserPlus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Inviter</span>
+                  </Button>
+                }
+              />
+              <Button variant="ghost" size="sm" onClick={fetchUsers}>
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-2">
