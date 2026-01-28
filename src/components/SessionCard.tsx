@@ -266,38 +266,40 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
           </Button>
         ) : (
           <>
-            {isBooked ? (
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="w-full" 
-                onClick={handleCancel}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <>
-                    <X className="h-3 w-3 mr-1" />
-                    Annuler la réservation
-                  </>
-                )}
-              </Button>
-            ) : (
-              <Button 
-                size="sm"
-                className="w-full" 
-                onClick={handleBook}
-                disabled={isLoading || isFull}
-              >
-                {isLoading ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : isFull ? (
-                  'Séance complète'
-                ) : (
-                  'Réserver cette séance'
-                )}
-              </Button>
+            {!isCreator && (
+              isBooked ? (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="w-full" 
+                  onClick={handleCancel}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <>
+                      <X className="h-3 w-3 mr-1" />
+                      Annuler la réservation
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button 
+                  size="sm"
+                  className="w-full" 
+                  onClick={handleBook}
+                  disabled={isLoading || isFull}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : isFull ? (
+                    'Séance complète'
+                  ) : (
+                    'Réserver cette séance'
+                  )}
+                </Button>
+              )
             )}
             
             {canDelete && !isPast && (
