@@ -7,6 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -142,10 +153,6 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
   async function handleDeleteSession() {
     if (!user || !canDelete) return;
     
-    if (!confirm('Voulez-vous vraiment supprimer cette séance ? Cette action est irréversible.')) {
-      return;
-    }
-    
     setIsDeletingSession(true);
     
     // First delete all bookings for this session
@@ -166,6 +173,8 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
       onBookingChange();
     }
   }
+
+  const hasParticipants = session.bookings.length > 0;
 
   return (
     <Card className={`group transition-all duration-300 hover:shadow-card animate-fade-in ${isBooked && !isPast ? 'ring-2 ring-primary/50' : ''} ${isPast && showPastStatus ? 'opacity-60 grayscale' : ''}`}>
@@ -303,22 +312,46 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
             )}
             
             {canDelete && !isPast && (
-              <Button 
-                variant="destructive" 
-                size="sm"
-                className="w-full" 
-                onClick={handleDeleteSession}
-                disabled={isDeletingSession}
-              >
-                {isDeletingSession ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <>
-                    <Trash2 className="h-3 w-3 mr-1" />
-                    Supprimer la séance
-                  </>
-                )}
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    className="w-full" 
+                    disabled={isDeletingSession}
+                  >
+                    {isDeletingSession ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <>
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Supprimer la séance
+                      </>
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {hasParticipants ? '⚠️ Supprimer la séance ?' : 'Supprimer la séance ?'}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {hasParticipants 
+                        ? 'Des participants sont inscrits à cette séance. La supprimer annulera leurs réservations et les notifiera.'
+                        : 'Voulez-vous vraiment supprimer cette séance ? Cette action est irréversible.'}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleDeleteSession}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Supprimer
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
           </>
         )}
