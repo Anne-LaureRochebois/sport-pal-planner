@@ -386,7 +386,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="w-full border-[#F1C40F] text-[#F1C40F] hover:bg-[#F1C40F]/10" 
+                      className="w-full border-destructive text-destructive hover:bg-destructive/10" 
                       disabled={isDeletingSession}
                     >
                       {isDeletingSession ? (
@@ -419,7 +419,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
                           <AlertDialogCancel>Retour</AlertDialogCancel>
                           <AlertDialogAction 
                             onClick={handleCancelSession}
-                            className="bg-[#F1C40F] text-black hover:bg-[#F1C40F]/80"
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           >
                             Annuler la séance
                           </AlertDialogAction>
@@ -429,7 +429,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                          <span className="text-[#F1C40F]">Toutes les occurrences futures</span>
+                          <span className="text-destructive">Toutes les occurrences futures</span>
                         </DropdownMenuItem>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -444,7 +444,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
                           <AlertDialogCancel>Retour</AlertDialogCancel>
                           <AlertDialogAction 
                             onClick={handleCancelAllRecurring}
-                            className="bg-[#F1C40F] text-black hover:bg-[#F1C40F]/80"
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           >
                             Tout annuler
                           </AlertDialogAction>
@@ -459,7 +459,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="w-full border-[#F1C40F] text-[#F1C40F] hover:bg-[#F1C40F]/10" 
+                      className="w-full border-destructive text-destructive hover:bg-destructive/10" 
                       disabled={isDeletingSession}
                     >
                       {isDeletingSession ? (
@@ -487,7 +487,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
                       <AlertDialogCancel>Retour</AlertDialogCancel>
                       <AlertDialogAction 
                         onClick={handleCancelSession}
-                        className="bg-[#F1C40F] text-black hover:bg-[#F1C40F]/80"
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
                         Annuler la séance
                       </AlertDialogAction>
