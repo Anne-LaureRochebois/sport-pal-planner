@@ -260,7 +260,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
       
       <CardFooter className="flex-col gap-2">
         {isPast && showPastStatus ? (
-          <Button variant="secondary" className="w-full" disabled>
+          <Button variant="secondary" size="sm" className="w-full" disabled>
             Séance terminée
           </Button>
         ) : (
@@ -268,27 +268,29 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
             {isBooked ? (
               <Button 
                 variant="outline" 
+                size="sm"
                 className="w-full" 
                 onClick={handleCancel}
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-3 w-3 animate-spin" />
                 ) : (
                   <>
-                    <X className="h-4 w-4 mr-2" />
+                    <X className="h-3 w-3 mr-1" />
                     Annuler la réservation
                   </>
                 )}
               </Button>
             ) : (
               <Button 
+                size="sm"
                 className="w-full" 
                 onClick={handleBook}
                 disabled={isLoading || isFull}
               >
                 {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-3 w-3 animate-spin" />
                 ) : isFull ? (
                   'Séance complète'
                 ) : (
@@ -300,15 +302,16 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
             {isCreator && !isPast && (
               <Button 
                 variant="destructive" 
+                size="sm"
                 className="w-full" 
                 onClick={handleDeleteSession}
                 disabled={isDeletingSession}
               >
                 {isDeletingSession ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-3 w-3 animate-spin" />
                 ) : (
                   <>
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <Trash2 className="h-3 w-3 mr-1" />
                     Supprimer la séance
                   </>
                 )}
