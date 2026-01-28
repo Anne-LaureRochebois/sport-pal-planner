@@ -11,15 +11,11 @@ import { toast } from 'sonner';
 import { Plus, Loader2 } from 'lucide-react';
 
 const sportTypes = [
-  { value: 'football', label: 'Football' },
-  { value: 'basketball', label: 'Basketball' },
-  { value: 'tennis', label: 'Tennis' },
-  { value: 'volleyball', label: 'Volleyball' },
-  { value: 'badminton', label: 'Badminton' },
-  { value: 'course', label: 'Course' },
+  { value: 'musculation', label: 'Musculation' },
+  { value: 'plein-air', label: 'Séance plein air' },
+  { value: 'escalade', label: 'Escalade' },
   { value: 'natation', label: 'Natation' },
-  { value: 'cyclisme', label: 'Cyclisme' },
-  { value: 'yoga', label: 'Yoga' },
+  { value: 'running', label: 'Running' },
   { value: 'autre', label: 'Autre' },
 ];
 
@@ -142,7 +138,7 @@ export default function CreateSessionDialog({ onSessionCreated }: CreateSessionD
               <Input
                 id="max_participants"
                 type="number"
-                min="2"
+                min="1"
                 max="100"
                 value={formData.max_participants}
                 onChange={(e) => setFormData({ ...formData, max_participants: e.target.value })}
