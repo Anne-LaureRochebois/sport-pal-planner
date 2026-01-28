@@ -123,10 +123,6 @@ export default function Header() {
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Se déconnecter</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive focus:text-destructive">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Se déconnecter</span>
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
