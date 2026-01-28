@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LogOut, UserPlus, User, Calendar } from 'lucide-react';
+import { LogOut, UserPlus, User } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -67,15 +67,6 @@ export default function Header() {
           {/* Navigation links */}
           <nav className="hidden sm:flex items-center gap-1">
             <Button
-              variant={location.pathname === '/' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => navigate('/')}
-              className="gap-2"
-            >
-              <Calendar className="h-4 w-4" />
-              Séances
-            </Button>
-            <Button
               variant={location.pathname === '/account' ? 'secondary' : 'ghost'}
               size="sm"
               onClick={() => navigate('/account')}
@@ -122,10 +113,6 @@ export default function Header() {
               
               {/* Mobile navigation */}
               <div className="sm:hidden">
-                <DropdownMenuItem onClick={() => navigate('/')} className="cursor-pointer">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  <span>Séances</span>
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/account')} className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   <span>Compte</span>
