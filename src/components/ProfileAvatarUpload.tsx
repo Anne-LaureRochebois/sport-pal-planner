@@ -87,11 +87,17 @@ export default function ProfileAvatarUpload({ avatarUrl, fullName, email, onAvat
       height: completedCrop.height * scaleY,
     };
 
-    canvas.width = pixelCrop.width;
-    canvas.height = pixelCrop.height;
+    // Output size fixed at 512x512 for better quality
+    const outputSize = 512;
+    canvas.width = outputSize;
+    canvas.height = outputSize;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
+
+    // Enable high-quality image smoothing
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
     ctx.drawImage(
       image,
@@ -101,15 +107,15 @@ export default function ProfileAvatarUpload({ avatarUrl, fullName, email, onAvat
       pixelCrop.height,
       0,
       0,
-      pixelCrop.width,
-      pixelCrop.height
+      outputSize,
+      outputSize
     );
 
     return new Promise((resolve) => {
       canvas.toBlob(
         (blob) => resolve(blob),
         'image/jpeg',
-        0.9
+        0.95
       );
     });
   }, [completedCrop]);
