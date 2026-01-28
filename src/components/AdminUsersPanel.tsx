@@ -35,7 +35,7 @@ interface User {
 
 const availableRoles = [
   { value: 'admin', label: 'Administrateur' },
-  { value: 'member', label: 'Membre' },
+  { value: 'member', label: 'Membre (peut créer et s\'inscrire aux séances)' },
 ];
 
 export default function AdminUsersPanel() {

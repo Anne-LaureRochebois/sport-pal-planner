@@ -43,7 +43,7 @@ const sportTypes = [
 ];
 
 export default function Dashboard() {
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterSport, setFilterSport] = useState('all');
@@ -121,9 +121,7 @@ export default function Dashboard() {
             </p>
           </div>
           
-          {isAdmin && (
-            <CreateSessionDialog onSessionCreated={fetchSessions} />
-          )}
+          <CreateSessionDialog onSessionCreated={fetchSessions} />
         </div>
         
         <Tabs defaultValue="upcoming" className="w-full">
@@ -172,7 +170,7 @@ export default function Dashboard() {
             {filteredUpcomingSessions.length === 0 ? (
               <EmptyState 
                 title={hasActiveFilters ? "Aucune séance trouvée" : "Aucune séance à venir"}
-                description={hasActiveFilters ? "Modifiez vos filtres pour voir plus de séances." : (isAdmin ? "Créez la première séance pour commencer !" : "Revenez plus tard pour de nouvelles séances.")}
+                description={hasActiveFilters ? "Modifiez vos filtres pour voir plus de séances." : "Créez la première séance pour commencer !"}
               />
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
