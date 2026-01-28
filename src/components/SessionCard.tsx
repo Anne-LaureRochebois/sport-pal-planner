@@ -67,7 +67,7 @@ interface CreatorProfile {
 }
 
 export default function SessionCard({ session, onBookingChange, showPastStatus = false }: SessionCardProps) {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isDeletingSession, setIsDeletingSession] = useState(false);
   const [creator, setCreator] = useState<CreatorProfile | null>(null);
@@ -94,6 +94,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
   const isPast = session.session_date < today;
   const isBooked = session.bookings.some(b => b.user_id === user?.id);
   const isCreator = session.created_by === user?.id;
+  const canDelete = isCreator || isAdmin;
   const spotsLeft = session.max_participants - session.bookings.length;
   const isFull = spotsLeft <= 0;
   const sportEmoji = sportEmojis[session.sport_type.toLowerCase()] || sportEmojis.default;
@@ -139,7 +140,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
   }
 
   async function handleDeleteSession() {
-    if (!user || !isCreator) return;
+    if (!user || !canDelete) return;
     
     if (!confirm('Voulez-vous vraiment supprimer cette séance ? Cette action est irréversible.')) {
       return;
@@ -299,7 +300,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
               </Button>
             )}
             
-            {isCreator && !isPast && (
+            {canDelete && !isPast && (
               <Button 
                 variant="destructive" 
                 size="sm"
