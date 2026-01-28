@@ -11,8 +11,16 @@ import { toast } from 'sonner';
 import { Plus, Loader2 } from 'lucide-react';
 
 const sportTypes = [
-  'Football', 'Basketball', 'Tennis', 'Volleyball', 'Badminton',
-  'Running', 'Swimming', 'Cycling', 'Yoga', 'Other'
+  { value: 'football', label: 'Football' },
+  { value: 'basketball', label: 'Basketball' },
+  { value: 'tennis', label: 'Tennis' },
+  { value: 'volleyball', label: 'Volleyball' },
+  { value: 'badminton', label: 'Badminton' },
+  { value: 'course', label: 'Course' },
+  { value: 'natation', label: 'Natation' },
+  { value: 'cyclisme', label: 'Cyclisme' },
+  { value: 'yoga', label: 'Yoga' },
+  { value: 'autre', label: 'Autre' },
 ];
 
 interface CreateSessionDialogProps {
@@ -57,9 +65,9 @@ export default function CreateSessionDialog({ onSessionCreated }: CreateSessionD
     setIsLoading(false);
     
     if (error) {
-      toast.error('Failed to create session');
+      toast.error('Échec de la création de la séance');
     } else {
-      toast.success('Session created!');
+      toast.success('Séance créée !');
       setOpen(false);
       setFormData({
         title: '',
@@ -80,19 +88,19 @@ export default function CreateSessionDialog({ onSessionCreated }: CreateSessionD
       <DialogTrigger asChild>
         <Button size="lg">
           <Plus className="h-4 w-4 mr-2" />
-          Create Session
+          Créer une séance
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="font-display">Create New Session</DialogTitle>
+          <DialogTitle className="font-display">Créer une nouvelle séance</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">Titre</Label>
             <Input
               id="title"
-              placeholder="Morning Football Game"
+              placeholder="Match de football du matin"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
@@ -100,10 +108,10 @@ export default function CreateSessionDialog({ onSessionCreated }: CreateSessionD
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
+            <Label htmlFor="description">Description (optionnelle)</Label>
             <Textarea
               id="description"
-              placeholder="Friendly match, all skill levels welcome..."
+              placeholder="Match amical, tous niveaux bienvenus..."
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
@@ -111,18 +119,18 @@ export default function CreateSessionDialog({ onSessionCreated }: CreateSessionD
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="sport_type">Sport Type</Label>
+              <Label htmlFor="sport_type">Type de sport</Label>
               <Select
                 value={formData.sport_type}
                 onValueChange={(value) => setFormData({ ...formData, sport_type: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select sport" />
+                  <SelectValue placeholder="Choisir un sport" />
                 </SelectTrigger>
                 <SelectContent>
                   {sportTypes.map((sport) => (
-                    <SelectItem key={sport} value={sport.toLowerCase()}>
-                      {sport}
+                    <SelectItem key={sport.value} value={sport.value}>
+                      {sport.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -130,7 +138,7 @@ export default function CreateSessionDialog({ onSessionCreated }: CreateSessionD
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="max_participants">Max Participants</Label>
+              <Label htmlFor="max_participants">Participants max</Label>
               <Input
                 id="max_participants"
                 type="number"
@@ -144,10 +152,10 @@ export default function CreateSessionDialog({ onSessionCreated }: CreateSessionD
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
+            <Label htmlFor="location">Lieu</Label>
             <Input
               id="location"
-              placeholder="Central Park Field 3"
+              placeholder="Stade Municipal Terrain 3"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
               required
@@ -167,7 +175,7 @@ export default function CreateSessionDialog({ onSessionCreated }: CreateSessionD
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="start_time">Start Time</Label>
+              <Label htmlFor="start_time">Heure de début</Label>
               <Input
                 id="start_time"
                 type="time"
@@ -178,7 +186,7 @@ export default function CreateSessionDialog({ onSessionCreated }: CreateSessionD
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="end_time">End Time</Label>
+              <Label htmlFor="end_time">Heure de fin</Label>
               <Input
                 id="end_time"
                 type="time"
@@ -190,7 +198,7 @@ export default function CreateSessionDialog({ onSessionCreated }: CreateSessionD
           </div>
           
           <Button type="submit" className="w-full" disabled={isLoading || !formData.sport_type}>
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Session'}
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Créer la séance'}
           </Button>
         </form>
       </DialogContent>

@@ -11,15 +11,15 @@ import { Loader2, Users, Calendar, MapPin } from 'lucide-react';
 import { z } from 'zod';
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email('Adresse email invalide'),
+  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
 });
 
 const signupSchema = z.object({
-  fullName: z.string().min(2, 'Name must be at least 2 characters').max(100),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  inviteCode: z.string().min(1, 'Invite code is required'),
+  fullName: z.string().min(2, 'Le nom doit contenir au moins 2 caractères').max(100),
+  email: z.string().email('Adresse email invalide'),
+  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
+  inviteCode: z.string().min(1, "Le code d'invitation est requis"),
 });
 
 export default function Auth() {
@@ -50,9 +50,9 @@ export default function Auth() {
     setIsSubmitting(false);
     
     if (error) {
-      toast.error(error.message);
+      toast.error('Email ou mot de passe incorrect');
     } else {
-      toast.success('Welcome back!');
+      toast.success('Bon retour parmi nous !');
       navigate('/');
     }
   }
@@ -73,7 +73,7 @@ export default function Auth() {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success('Account created! Welcome aboard.');
+      toast.success('Compte créé ! Bienvenue.');
       navigate('/');
     }
   }
@@ -95,7 +95,7 @@ export default function Auth() {
             SportSlot
           </h1>
           <p className="mt-2 text-primary-foreground/80">
-            Book sports sessions with your crew
+            Réservez des créneaux sportifs avec vos amis
           </p>
         </div>
         
@@ -105,8 +105,8 @@ export default function Auth() {
               <Calendar className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h3 className="font-display font-semibold text-primary-foreground">Easy Scheduling</h3>
-              <p className="text-sm text-primary-foreground/70">Find and book available time slots instantly</p>
+              <h3 className="font-display font-semibold text-primary-foreground">Planification facile</h3>
+              <p className="text-sm text-primary-foreground/70">Trouvez et réservez des créneaux disponibles instantanément</p>
             </div>
           </div>
           
@@ -115,8 +115,8 @@ export default function Auth() {
               <Users className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h3 className="font-display font-semibold text-primary-foreground">Private Group</h3>
-              <p className="text-sm text-primary-foreground/70">Invite-only access for your trusted friends</p>
+              <h3 className="font-display font-semibold text-primary-foreground">Groupe privé</h3>
+              <p className="text-sm text-primary-foreground/70">Accès sur invitation uniquement pour vos amis de confiance</p>
             </div>
           </div>
           
@@ -125,14 +125,14 @@ export default function Auth() {
               <MapPin className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h3 className="font-display font-semibold text-primary-foreground">Multiple Venues</h3>
-              <p className="text-sm text-primary-foreground/70">Sessions at various locations</p>
+              <h3 className="font-display font-semibold text-primary-foreground">Plusieurs lieux</h3>
+              <p className="text-sm text-primary-foreground/70">Des séances dans différents endroits</p>
             </div>
           </div>
         </div>
         
         <p className="text-sm text-primary-foreground/60">
-          © 2026 SportSlot. All rights reserved.
+          © 2026 SportSlot. Tous droits réservés.
         </p>
       </div>
       
@@ -143,14 +143,14 @@ export default function Auth() {
             <div className="lg:hidden mb-4">
               <h1 className="font-display text-2xl font-bold text-primary">SportSlot</h1>
             </div>
-            <CardTitle className="font-display text-2xl">Welcome</CardTitle>
-            <CardDescription>Sign in or create an account to continue</CardDescription>
+            <CardTitle className="font-display text-2xl">Bienvenue</CardTitle>
+            <CardDescription>Connectez-vous ou créez un compte pour continuer</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="login">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                <TabsTrigger value="login">Connexion</TabsTrigger>
+                <TabsTrigger value="signup">Inscription</TabsTrigger>
               </TabsList>
               
               <TabsContent value="login">
@@ -160,14 +160,14 @@ export default function Auth() {
                     <Input
                       id="login-email"
                       type="email"
-                      placeholder="you@example.com"
+                      placeholder="vous@exemple.com"
                       value={loginData.email}
                       onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
+                    <Label htmlFor="login-password">Mot de passe</Label>
                     <Input
                       id="login-password"
                       type="password"
@@ -178,7 +178,7 @@ export default function Auth() {
                     />
                   </div>
                   <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                    {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sign In'}
+                    {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Se connecter'}
                   </Button>
                 </form>
               </TabsContent>
@@ -186,11 +186,11 @@ export default function Auth() {
               <TabsContent value="signup">
                 <form onSubmit={handleSignup} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name">Full Name</Label>
+                    <Label htmlFor="signup-name">Nom complet</Label>
                     <Input
                       id="signup-name"
                       type="text"
-                      placeholder="John Doe"
+                      placeholder="Jean Dupont"
                       value={signupData.fullName}
                       onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
                       required
@@ -201,14 +201,14 @@ export default function Auth() {
                     <Input
                       id="signup-email"
                       type="email"
-                      placeholder="you@example.com"
+                      placeholder="vous@exemple.com"
                       value={signupData.email}
                       onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
+                    <Label htmlFor="signup-password">Mot de passe</Label>
                     <Input
                       id="signup-password"
                       type="password"
@@ -219,21 +219,21 @@ export default function Auth() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-invite">Invite Code</Label>
+                    <Label htmlFor="signup-invite">Code d'invitation</Label>
                     <Input
                       id="signup-invite"
                       type="text"
-                      placeholder="Enter your invite code"
+                      placeholder="Entrez votre code d'invitation"
                       value={signupData.inviteCode}
                       onChange={(e) => setSignupData({ ...signupData, inviteCode: e.target.value })}
                       required
                     />
                     <p className="text-xs text-muted-foreground">
-                      You need an invite from an administrator to join
+                      Vous avez besoin d'une invitation d'un administrateur pour rejoindre
                     </p>
                   </div>
                   <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                    {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Account'}
+                    {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Créer un compte'}
                   </Button>
                 </form>
               </TabsContent>

@@ -84,9 +84,9 @@ export default function Dashboard() {
       <main className="container py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="font-display text-3xl font-bold">Sessions</h1>
+            <h1 className="font-display text-3xl font-bold">Séances</h1>
             <p className="text-muted-foreground mt-1">
-              Find and book sports sessions with your friends
+              Trouvez et réservez des séances sportives avec vos amis
             </p>
           </div>
           
@@ -102,19 +102,19 @@ export default function Dashboard() {
           <TabsList className="mb-6">
             <TabsTrigger value="upcoming" className="gap-2">
               <Calendar className="h-4 w-4" />
-              All Upcoming
+              Toutes les séances
             </TabsTrigger>
             <TabsTrigger value="my-sessions" className="gap-2">
               <Inbox className="h-4 w-4" />
-              My Bookings
+              Mes réservations
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="upcoming">
             {upcomingSessions.length === 0 ? (
               <EmptyState 
-                title="No upcoming sessions" 
-                description={isAdmin ? "Create the first session to get started!" : "Check back later for new sessions."}
+                title="Aucune séance à venir" 
+                description={isAdmin ? "Créez la première séance pour commencer !" : "Revenez plus tard pour de nouvelles séances."}
               />
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -132,8 +132,8 @@ export default function Dashboard() {
           <TabsContent value="my-sessions">
             {mySessions.length === 0 ? (
               <EmptyState 
-                title="No bookings yet" 
-                description="Book a session to see it here!"
+                title="Aucune réservation" 
+                description="Réservez une séance pour la voir ici !"
               />
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

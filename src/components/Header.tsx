@@ -1,4 +1,4 @@
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 export default function Header() {
   const { user, isAdmin, signOut } = useAuth();
   
-  const displayName = user?.user_metadata?.full_name || user?.email || 'User';
+  const displayName = user?.user_metadata?.full_name || user?.email || 'Utilisateur';
   const initials = displayName.charAt(0).toUpperCase();
 
   return (
@@ -30,7 +30,7 @@ export default function Header() {
         <div className="flex items-center gap-4">
           {isAdmin && (
             <Badge variant="secondary" className="hidden sm:flex">
-              Admin
+              Administrateur
             </Badge>
           )}
           
@@ -54,7 +54,7 @@ export default function Header() {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive focus:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Sign out</span>
+                <span>Se déconnecter</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
