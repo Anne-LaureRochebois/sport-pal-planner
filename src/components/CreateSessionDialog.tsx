@@ -89,12 +89,12 @@ export default function CreateSessionDialog({ onSessionCreated }: CreateSessionD
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg">
+        <Button size="default" className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />
           Créer une séance
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="max-w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display">Créer une nouvelle séance</DialogTitle>
         </DialogHeader>
