@@ -18,12 +18,14 @@ interface Session {
   start_time: string;
   end_time: string;
   max_participants: number;
+  created_by: string | null;
   bookings: {
     id: string;
     user_id: string;
     profiles: {
       full_name: string | null;
       email: string;
+      avatar_url: string | null;
     } | null;
   }[];
 }
@@ -43,7 +45,8 @@ export default function Dashboard() {
           user_id,
           profiles:user_id (
             full_name,
-            email
+            email,
+            avatar_url
           )
         )
       `)
