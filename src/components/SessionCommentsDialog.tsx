@@ -18,10 +18,10 @@ interface Comment {
   updated_at: string;
   user_id: string;
   profiles: {
-    full_name: string | null;
+    full_name: string;
     email: string;
-    avatar_url: string | null;
-  } | null;
+    avatar_url: string;
+  };
 }
 
 interface SessionCommentsDialogProps {
@@ -50,26 +50,47 @@ export default function SessionCommentsDialog({
 
   async function fetchComments() {
     setLoading(true);
-    const { data, error } = await supabase
+    
+    // First fetch comments
+    const { data: commentsData, error } = await supabase
       .from('session_comments')
-      .select(`
-        id,
-        content,
-        created_at,
-        updated_at,
-        user_id,
-        profiles:user_id (
-          full_name,
-          email,
-          avatar_url
-        )
-      `)
+      .select('id, content, user_id, created_at, updated_at')
       .eq('session_id', sessionId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: true });
 
-    if (!error && data) {
-      setComments(data as Comment[]);
+    if (error) {
+      console.error('Error fetching comments:', error);
+      setLoading(false);
+      return;
     }
+
+    if (!commentsData || commentsData.length === 0) {
+      setComments([]);
+      setLoading(false);
+      return;
+    }
+
+    // Fetch profiles for all comment authors
+    const userIds = [...new Set(commentsData.map(c => c.user_id))];
+    const { data: profilesData } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, email, avatar_url')
+      .in('user_id', userIds);
+
+    const profilesMap = new Map(
+      (profilesData || []).map(p => [p.user_id, { 
+        full_name: p.full_name || '', 
+        email: p.email, 
+        avatar_url: p.avatar_url || '' 
+      }])
+    );
+
+    const commentsWithProfiles: Comment[] = commentsData.map(comment => ({
+      ...comment,
+      profiles: profilesMap.get(comment.user_id) || { full_name: '', email: '', avatar_url: '' }
+    }));
+
+    setComments(commentsWithProfiles);
     setLoading(false);
   }
 

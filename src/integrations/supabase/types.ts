@@ -18,18 +18,21 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          reminder_sent: boolean | null
           session_id: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          reminder_sent?: boolean | null
           session_id: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          reminder_sent?: boolean | null
           session_id?: string
           user_id?: string
         }
@@ -200,8 +203,13 @@ export type Database = {
           description: string | null
           end_time: string
           id: string
+          is_recurring_instance: boolean | null
           location: string
           max_participants: number
+          parent_session_id: string | null
+          recurrence_days: number[] | null
+          recurrence_end_date: string | null
+          recurrence_type: string | null
           session_date: string
           sport_type: string
           start_time: string
@@ -213,8 +221,13 @@ export type Database = {
           description?: string | null
           end_time: string
           id?: string
+          is_recurring_instance?: boolean | null
           location: string
           max_participants?: number
+          parent_session_id?: string | null
+          recurrence_days?: number[] | null
+          recurrence_end_date?: string | null
+          recurrence_type?: string | null
           session_date: string
           sport_type: string
           start_time: string
@@ -226,14 +239,27 @@ export type Database = {
           description?: string | null
           end_time?: string
           id?: string
+          is_recurring_instance?: boolean | null
           location?: string
           max_participants?: number
+          parent_session_id?: string | null
+          recurrence_days?: number[] | null
+          recurrence_end_date?: string | null
+          recurrence_type?: string | null
           session_date?: string
           sport_type?: string
           start_time?: string
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sessions_parent_session_id_fkey"
+            columns: ["parent_session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -258,6 +284,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_future_recurring_sessions: {
+        Args: { p_parent_id: string }
+        Returns: undefined
+      }
+      generate_recurring_sessions: {
+        Args: {
+          p_end_date: string
+          p_parent_id: string
+          p_recurrence_days: number[]
+          p_recurrence_type: string
+        }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

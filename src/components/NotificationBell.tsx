@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Check, CheckCheck, Trash2, Calendar, UserPlus, UserMinus, AlertCircle } from 'lucide-react';
+import { Bell, Check, CheckCheck, Trash2, Calendar, UserPlus, UserMinus, AlertCircle, AlarmClock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +24,8 @@ function getNotificationIcon(type: Notification['type']) {
       return <Calendar className="h-4 w-4 text-warning" />;
     case 'session_cancelled':
       return <AlertCircle className="h-4 w-4 text-destructive" />;
+    case 'session_reminder':
+      return <AlarmClock className="h-4 w-4 text-primary" />;
     default:
       return <Bell className="h-4 w-4" />;
   }

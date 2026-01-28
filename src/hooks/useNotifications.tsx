@@ -6,7 +6,7 @@ import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 export interface Notification {
   id: string;
   user_id: string;
-  type: 'booking_created' | 'booking_cancelled' | 'session_modified' | 'session_cancelled';
+  type: 'booking_created' | 'booking_cancelled' | 'session_modified' | 'session_cancelled' | 'session_reminder';
   session_id: string | null;
   actor_id: string | null;
   actor_name: string | null;
