@@ -81,6 +81,8 @@ export default function Dashboard() {
   
   const filteredUpcomingSessions = sessions.filter(s => {
     if (s.session_date < today) return false;
+    // Exclude sessions already booked by the current user
+    if (s.bookings.some(b => b.user_id === user?.id)) return false;
     if (filterSport !== 'all' && s.sport_type !== filterSport) return false;
     if (filterDate && s.session_date !== filterDate) return false;
     return true;
