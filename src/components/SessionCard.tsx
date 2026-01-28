@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Calendar, Clock, MapPin, Users, Loader2, Check, X } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Loader2, Check, X, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,6 +17,7 @@ interface Booking {
   profiles: {
     full_name: string | null;
     email: string;
+    avatar_url: string | null;
   } | null;
 }
 
@@ -30,6 +31,7 @@ interface Session {
   start_time: string;
   end_time: string;
   max_participants: number;
+  created_by: string | null;
   bookings: Booking[];
 }
 
@@ -61,10 +63,12 @@ const sportLabels: Record<string, string> = {
 export default function SessionCard({ session, onBookingChange, showPastStatus = false }: SessionCardProps) {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeletingSession, setIsDeletingSession] = useState(false);
   
   const today = new Date().toISOString().split('T')[0];
   const isPast = session.session_date < today;
   const isBooked = session.bookings.some(b => b.user_id === user?.id);
+  const isCreator = session.created_by === user?.id;
   const spotsLeft = session.max_participants - session.bookings.length;
   const isFull = spotsLeft <= 0;
   const sportEmoji = sportEmojis[session.sport_type.toLowerCase()] || sportEmojis.default;
@@ -104,6 +108,34 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
       toast.error("Échec de l'annulation");
     } else {
       toast.success('Réservation annulée');
+      onBookingChange();
+    }
+  }
+
+  async function handleDeleteSession() {
+    if (!user || !isCreator) return;
+    
+    if (!confirm('Voulez-vous vraiment supprimer cette séance ? Cette action est irréversible.')) {
+      return;
+    }
+    
+    setIsDeletingSession(true);
+    
+    // First delete all bookings for this session
+    await supabase.from('bookings').delete().eq('session_id', session.id);
+    
+    // Then delete the session
+    const { error } = await supabase
+      .from('sessions')
+      .delete()
+      .eq('id', session.id);
+    
+    setIsDeletingSession(false);
+    
+    if (error) {
+      toast.error('Échec de la suppression de la séance');
+    } else {
+      toast.success('Séance supprimée');
       onBookingChange();
     }
   }
@@ -172,6 +204,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
                 <Tooltip key={booking.id}>
                   <TooltipTrigger>
                     <Avatar className="h-7 w-7 border-2 border-background">
+                      <AvatarImage src={booking.profiles?.avatar_url || undefined} />
                       <AvatarFallback className="text-xs bg-secondary text-secondary-foreground">
                         {booking.profiles?.full_name?.charAt(0) || booking.profiles?.email?.charAt(0) || '?'}
                       </AvatarFallback>
@@ -194,41 +227,63 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
         )}
       </CardContent>
       
-      <CardFooter>
+      <CardFooter className="flex-col gap-2">
         {isPast && showPastStatus ? (
           <Button variant="secondary" className="w-full" disabled>
             Séance terminée
           </Button>
-        ) : isBooked ? (
-          <Button 
-            variant="outline" 
-            className="w-full" 
-            onClick={handleCancel}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <X className="h-4 w-4 mr-2" />
-                Annuler la réservation
-              </>
-            )}
-          </Button>
         ) : (
-          <Button 
-            className="w-full" 
-            onClick={handleBook}
-            disabled={isLoading || isFull}
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : isFull ? (
-              'Séance complète'
+          <>
+            {isBooked ? (
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={handleCancel}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <X className="h-4 w-4 mr-2" />
+                    Annuler la réservation
+                  </>
+                )}
+              </Button>
             ) : (
-              'Réserver cette séance'
+              <Button 
+                className="w-full" 
+                onClick={handleBook}
+                disabled={isLoading || isFull}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : isFull ? (
+                  'Séance complète'
+                ) : (
+                  'Réserver cette séance'
+                )}
+              </Button>
             )}
-          </Button>
+            
+            {isCreator && !isPast && (
+              <Button 
+                variant="destructive" 
+                className="w-full" 
+                onClick={handleDeleteSession}
+                disabled={isDeletingSession}
+              >
+                {isDeletingSession ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Supprimer la séance
+                  </>
+                )}
+              </Button>
+            )}
+          </>
         )}
       </CardFooter>
     </Card>

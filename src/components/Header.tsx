@@ -1,7 +1,9 @@
-import { LogOut } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { LogOut, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,12 +12,39 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import ProfileAvatarUpload from './ProfileAvatarUpload';
+
+interface Profile {
+  avatar_url: string | null;
+  full_name: string | null;
+  email: string;
+}
 
 export default function Header() {
   const { user, isAdmin, signOut } = useAuth();
+  const [profile, setProfile] = useState<Profile | null>(null);
   
-  const displayName = user?.user_metadata?.full_name || user?.email || 'Utilisateur';
+  async function fetchProfile() {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('profiles')
+      .select('avatar_url, full_name, email')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    
+    if (data) {
+      setProfile(data);
+    }
+  }
+  
+  useEffect(() => {
+    fetchProfile();
+  }, [user]);
+  
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email || 'Utilisateur';
   const initials = displayName.charAt(0).toUpperCase();
+  const avatarUrl = profile?.avatar_url;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -38,14 +67,21 @@ export default function Header() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9">
+                  <AvatarImage src={avatarUrl || undefined} alt={displayName} />
                   <AvatarFallback className="bg-primary text-primary-foreground">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <div className="flex items-center justify-start gap-2 p-2">
+            <DropdownMenuContent className="w-56 bg-popover" align="end" forceMount>
+              <div className="flex items-center justify-start gap-3 p-2">
+                <ProfileAvatarUpload 
+                  avatarUrl={avatarUrl || null}
+                  fullName={profile?.full_name || null}
+                  email={profile?.email || user?.email || ''}
+                  onAvatarUpdated={fetchProfile}
+                />
                 <div className="flex flex-col space-y-1 leading-none">
                   <p className="font-medium">{displayName}</p>
                   <p className="text-xs text-muted-foreground">{user?.email}</p>
