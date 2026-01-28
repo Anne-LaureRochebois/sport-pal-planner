@@ -5,8 +5,12 @@ import Header from '@/components/Header';
 import SessionCard from '@/components/SessionCard';
 import CreateSessionDialog from '@/components/CreateSessionDialog';
 import InviteUserDialog from '@/components/InviteUserDialog';
-import { Loader2, Calendar, Inbox } from 'lucide-react';
+import { Loader2, Calendar, Inbox, Filter, X } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 
 interface Session {
   id: string;
@@ -30,10 +34,22 @@ interface Session {
   }[];
 }
 
+const sportTypes = [
+  { value: 'all', label: 'Tous les sports' },
+  { value: 'musculation', label: 'Musculation' },
+  { value: 'plein-air', label: 'Séance plein air' },
+  { value: 'escalade', label: 'Escalade' },
+  { value: 'natation', label: 'Natation' },
+  { value: 'running', label: 'Running' },
+  { value: 'autre', label: 'Autre' },
+];
+
 export default function Dashboard() {
   const { user, isAdmin } = useAuth();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterSport, setFilterSport] = useState('all');
+  const [filterDate, setFilterDate] = useState('');
 
   async function fetchSessions() {
     const { data, error } = await supabase
@@ -64,10 +80,24 @@ export default function Dashboard() {
   }, []);
 
   const today = new Date().toISOString().split('T')[0];
-  const upcomingSessions = sessions.filter(s => s.session_date >= today);
+  
+  const filteredUpcomingSessions = sessions.filter(s => {
+    if (s.session_date < today) return false;
+    if (filterSport !== 'all' && s.sport_type !== filterSport) return false;
+    if (filterDate && s.session_date !== filterDate) return false;
+    return true;
+  });
+  
   const mySessions = sessions.filter(s => 
     s.bookings.some(b => b.user_id === user?.id)
   );
+  
+  const hasActiveFilters = filterSport !== 'all' || filterDate !== '';
+  
+  function clearFilters() {
+    setFilterSport('all');
+    setFilterDate('');
+  }
 
   if (loading) {
     return (
@@ -114,14 +144,53 @@ export default function Dashboard() {
           </TabsList>
           
           <TabsContent value="upcoming">
-            {upcomingSessions.length === 0 ? (
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-6 p-4 bg-muted/50 rounded-lg">
+              <div className="flex-1 space-y-1">
+                <Label htmlFor="filter-sport" className="text-xs text-muted-foreground">Type de sport</Label>
+                <Select value={filterSport} onValueChange={setFilterSport}>
+                  <SelectTrigger id="filter-sport" className="bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover">
+                    {sportTypes.map((sport) => (
+                      <SelectItem key={sport.value} value={sport.value}>
+                        {sport.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex-1 space-y-1">
+                <Label htmlFor="filter-date" className="text-xs text-muted-foreground">Date</Label>
+                <Input
+                  id="filter-date"
+                  type="date"
+                  value={filterDate}
+                  onChange={(e) => setFilterDate(e.target.value)}
+                  className="bg-background"
+                />
+              </div>
+              
+              {hasActiveFilters && (
+                <div className="flex items-end">
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
+                    <X className="h-3 w-3" />
+                    Effacer
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            {filteredUpcomingSessions.length === 0 ? (
               <EmptyState 
-                title="Aucune séance à venir" 
-                description={isAdmin ? "Créez la première séance pour commencer !" : "Revenez plus tard pour de nouvelles séances."}
+                title={hasActiveFilters ? "Aucune séance trouvée" : "Aucune séance à venir"}
+                description={hasActiveFilters ? "Modifiez vos filtres pour voir plus de séances." : (isAdmin ? "Créez la première séance pour commencer !" : "Revenez plus tard pour de nouvelles séances.")}
               />
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {upcomingSessions.map((session) => (
+                {filteredUpcomingSessions.map((session) => (
                   <SessionCard 
                     key={session.id} 
                     session={session} 
