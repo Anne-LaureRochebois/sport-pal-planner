@@ -217,7 +217,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
   const hasParticipants = session.bookings.length > 0;
 
   return (
-    <Card className={`group transition-all duration-300 hover:shadow-card animate-fade-in ${isBooked && !isPast && !isCancelled ? 'ring-2 ring-primary/50' : ''} ${isPast && showPastStatus ? 'opacity-60 grayscale' : ''} ${isCancelled ? 'opacity-70' : ''}`}>
+    <Card className={`group transition-all duration-300 hover:shadow-card hover:-translate-y-1 ${isBooked && !isPast && !isCancelled ? 'ring-2 ring-primary/50' : ''} ${isPast && showPastStatus ? 'opacity-60 grayscale' : ''} ${isCancelled ? 'opacity-70' : ''}`}>
       <CardHeader className="pb-3 px-4 sm:px-6">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
