@@ -205,32 +205,42 @@ export default function Dashboard() {
               </ToggleGroup>
             </div>
             
-            {viewMode === 'list' ? (
-              filteredUpcomingSessions.length === 0 ? (
-                <EmptyState 
-                  title={hasActiveFilters ? "Aucune séance trouvée" : "Aucune séance à venir"}
-                  description={hasActiveFilters ? "Modifiez vos filtres pour voir plus de séances." : "Créez la première séance pour commencer !"}
-                />
+            <div 
+              key={viewMode} 
+              className="animate-fade-in"
+            >
+              {viewMode === 'list' ? (
+                filteredUpcomingSessions.length === 0 ? (
+                  <EmptyState 
+                    title={hasActiveFilters ? "Aucune séance trouvée" : "Aucune séance à venir"}
+                    description={hasActiveFilters ? "Modifiez vos filtres pour voir plus de séances." : "Créez la première séance pour commencer !"}
+                  />
+                ) : (
+                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {filteredUpcomingSessions.map((session, index) => (
+                      <div 
+                        key={session.id}
+                        className="animate-fade-in"
+                        style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
+                      >
+                        <SessionCard 
+                          session={session} 
+                          onBookingChange={fetchSessions}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )
               ) : (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {filteredUpcomingSessions.map((session) => (
-                    <SessionCard 
-                      key={session.id} 
-                      session={session} 
-                      onBookingChange={fetchSessions}
-                    />
-                  ))}
-                </div>
-              )
-            ) : (
-              <SessionCalendarView
-                sessions={calendarFilteredSessions}
-                currentMonth={calendarMonth}
-                onMonthChange={setCalendarMonth}
-                onSessionClick={(session) => setSelectedSession(session)}
-                userId={user?.id}
-              />
-            )}
+                <SessionCalendarView
+                  sessions={calendarFilteredSessions}
+                  currentMonth={calendarMonth}
+                  onMonthChange={setCalendarMonth}
+                  onSessionClick={(session) => setSelectedSession(session)}
+                  userId={user?.id}
+                />
+              )}
+            </div>
             
             {/* Session Detail Dialog from Calendar */}
             <Dialog open={!!selectedSession} onOpenChange={(open) => !open && setSelectedSession(null)}>
@@ -259,13 +269,18 @@ export default function Dashboard() {
               />
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {mySessions.map((session) => (
-                  <SessionCard 
-                    key={session.id} 
-                    session={session} 
-                    onBookingChange={fetchSessions}
-                    showPastStatus={true}
-                  />
+                {mySessions.map((session, index) => (
+                  <div 
+                    key={session.id}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}
+                  >
+                    <SessionCard 
+                      session={session} 
+                      onBookingChange={fetchSessions}
+                      showPastStatus={true}
+                    />
+                  </div>
                 ))}
               </div>
             )}
