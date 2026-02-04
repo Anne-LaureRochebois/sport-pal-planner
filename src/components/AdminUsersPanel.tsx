@@ -352,13 +352,13 @@ export default function AdminUsersPanel() {
         <CardContent>
           <Tabs defaultValue={pendingUsers.length > 0 ? "pending" : "approved"} className="w-full">
             <TabsList className="grid w-full grid-cols-3 mb-4">
-              <TabsTrigger value="pending" className="gap-1 text-xs sm:text-sm">
+              <TabsTrigger value="pending" className="gap-1 text-xs sm:text-sm relative">
                 <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                 En attente
                 {pendingUsers.length > 0 && (
-                  <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                  <span className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full bg-destructive text-destructive-foreground text-xs font-medium flex items-center justify-center animate-pulse">
                     {pendingUsers.length}
-                  </Badge>
+                  </span>
                 )}
               </TabsTrigger>
               <TabsTrigger value="approved" className="gap-1 text-xs sm:text-sm">
