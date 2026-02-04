@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Account from "./pages/Account";
+import PendingApproval from "./pages/PendingApproval";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/account" element={<Account />} />
+            <Route path="/pending" element={<PendingApproval />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -136,27 +136,42 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           avatar_url: string | null
           created_at: string
           email: string
           full_name: string | null
           id: string
+          is_approved: boolean
+          rejected_at: string | null
+          rejected_by: string | null
           user_id: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           created_at?: string
           email: string
           full_name?: string | null
           id?: string
+          is_approved?: boolean
+          rejected_at?: string | null
+          rejected_by?: string | null
           user_id: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string
           full_name?: string | null
           id?: string
+          is_approved?: boolean
+          rejected_at?: string | null
+          rejected_by?: string | null
           user_id?: string
         }
         Relationships: []
@@ -305,6 +320,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string | null
+          is_approved: boolean | null
           user_id: string | null
         }
         Insert: {
@@ -313,6 +329,7 @@ export type Database = {
           email?: never
           full_name?: string | null
           id?: string | null
+          is_approved?: boolean | null
           user_id?: string | null
         }
         Update: {
@@ -321,12 +338,14 @@ export type Database = {
           email?: never
           full_name?: string | null
           id?: string | null
+          is_approved?: boolean | null
           user_id?: string | null
         }
         Relationships: []
       }
     }
     Functions: {
+      approve_user: { Args: { p_user_id: string }; Returns: boolean }
       delete_future_recurring_sessions: {
         Args: { p_parent_id: string }
         Returns: undefined
@@ -347,6 +366,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      reject_user: { Args: { p_user_id: string }; Returns: boolean }
       validate_invite_code: {
         Args: { p_email: string; p_invite_code: string }
         Returns: boolean

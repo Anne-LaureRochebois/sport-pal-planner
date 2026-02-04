@@ -66,7 +66,7 @@ serve(async (req: Request) => {
     if (method === "GET") {
       const { data: profiles, error } = await adminClient
         .from("profiles")
-        .select("user_id, full_name, email, avatar_url, created_at")
+        .select("user_id, full_name, email, avatar_url, created_at, is_approved, rejected_at")
         .order("created_at", { ascending: false });
 
       if (error) {
