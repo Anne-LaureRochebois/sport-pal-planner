@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -22,8 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { Users, MoreVertical, Trash2, Mail, RefreshCw, Loader2, Copy, Check, Shield, UserPlus } from 'lucide-react';
-import InviteUserDialog from './InviteUserDialog';
+import { Users, MoreVertical, Trash2, Mail, RefreshCw, Loader2, Shield, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 interface User {
   user_id: string;
@@ -31,6 +31,8 @@ interface User {
   email: string;
   avatar_url: string | null;
   created_at: string;
+  is_approved: boolean;
+  rejected_at: string | null;
   roles: ('admin' | 'member')[];
 }
 
@@ -52,11 +54,6 @@ export default function AdminUsersPanel() {
   // Delete confirmation dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
-  
-  // Invite code dialog state
-  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
-  const [inviteCode, setInviteCode] = useState('');
-  const [copied, setCopied] = useState(false);
   
   // Roles dialog state
   const [rolesDialogOpen, setRolesDialogOpen] = useState(false);
@@ -83,6 +80,42 @@ export default function AdminUsersPanel() {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  const pendingUsers = users.filter(u => !u.is_approved && !u.rejected_at);
+  const approvedUsers = users.filter(u => u.is_approved);
+  const rejectedUsers = users.filter(u => !u.is_approved && u.rejected_at);
+
+  async function handleApproveUser(user: User) {
+    setActionLoading(user.user_id);
+    try {
+      const { error } = await supabase.rpc('approve_user', { p_user_id: user.user_id });
+      if (error) throw error;
+      
+      toast.success(`${user.full_name || user.email} a été approuvé`);
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error approving user:', error);
+      toast.error(error.message || "Erreur lors de l'approbation");
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function handleRejectUser(user: User) {
+    setActionLoading(user.user_id);
+    try {
+      const { error } = await supabase.rpc('reject_user', { p_user_id: user.user_id });
+      if (error) throw error;
+      
+      toast.success(`${user.full_name || user.email} a été refusé`);
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error rejecting user:', error);
+      toast.error(error.message || 'Erreur lors du refus');
+    } finally {
+      setActionLoading(null);
+    }
+  }
 
   async function handleDeleteUser() {
     if (!deletingUser) return;
@@ -163,37 +196,6 @@ export default function AdminUsersPanel() {
     }
   }
 
-  async function handleResendCredentials(user: User) {
-    setActionLoading(user.user_id);
-    try {
-      const response = await supabase.functions.invoke('admin-users', {
-        method: 'POST',
-        body: { email: user.email },
-      });
-
-      if (response.error) throw response.error;
-      
-      if (response.data.type === 'recovery') {
-        toast.success('Lien de réinitialisation généré');
-      } else if (response.data.inviteCode) {
-        setInviteCode(response.data.inviteCode);
-        setInviteDialogOpen(true);
-      }
-    } catch (error: any) {
-      console.error('Error resending credentials:', error);
-      toast.error(error.message || "Erreur lors de l'envoi");
-    } finally {
-      setActionLoading(null);
-    }
-  }
-
-  function copyInviteCode() {
-    navigator.clipboard.writeText(inviteCode);
-    setCopied(true);
-    toast.success("Code copié !");
-    setTimeout(() => setCopied(false), 2000);
-  }
-
   function openEditDialog(user: User) {
     setEditingUser(user);
     setNewEmail(user.email);
@@ -219,6 +221,113 @@ export default function AdminUsersPanel() {
     );
   }
 
+  function UserRow({ user, showApprovalActions = false }: { user: User; showApprovalActions?: boolean }) {
+    return (
+      <div className="flex items-center justify-between gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <Avatar className="h-8 w-8 flex-shrink-0">
+            <AvatarImage src={user.avatar_url || undefined} />
+            <AvatarFallback className="text-xs bg-secondary">
+              {user.full_name?.charAt(0) || user.email.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm font-medium truncate">
+                {user.full_name || user.email}
+              </p>
+              {user.roles?.includes('admin') && (
+                <Badge variant="secondary" className="text-xs flex-shrink-0">
+                  Admin
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+          </div>
+        </div>
+        
+        {showApprovalActions ? (
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1 text-green-600 hover:text-green-700 hover:bg-green-50"
+              onClick={() => handleApproveUser(user)}
+              disabled={actionLoading === user.user_id}
+            >
+              {actionLoading === user.user_id ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle className="h-4 w-4" />
+              )}
+              <span className="hidden sm:inline">Approuver</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={() => handleRejectUser(user)}
+              disabled={actionLoading === user.user_id}
+            >
+              {actionLoading === user.user_id ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <XCircle className="h-4 w-4" />
+              )}
+              <span className="hidden sm:inline">Refuser</span>
+            </Button>
+          </div>
+        ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 w-8 p-0 flex-shrink-0"
+                disabled={actionLoading === user.user_id}
+              >
+                {actionLoading === user.user_id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <MoreVertical className="h-4 w-4" />
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-popover">
+              {!user.is_approved && (
+                <DropdownMenuItem onClick={() => handleApproveUser(user)}>
+                  <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                  Approuver
+                </DropdownMenuItem>
+              )}
+              {user.is_approved && (
+                <DropdownMenuItem onClick={() => handleRejectUser(user)}>
+                  <XCircle className="h-4 w-4 mr-2 text-destructive" />
+                  Révoquer l'accès
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={() => openRolesDialog(user)}>
+                <Shield className="h-4 w-4 mr-2" />
+                Modifier les rôles
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openEditDialog(user)}>
+                <Mail className="h-4 w-4 mr-2" />
+                Modifier l'email
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => openDeleteDialog(user)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Supprimer
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <Card>
@@ -238,94 +347,69 @@ export default function AdminUsersPanel() {
               <Users className="h-5 w-5" />
               Utilisateurs ({users.length})
             </CardTitle>
-            <div className="flex items-center gap-2">
-              <InviteUserDialog 
-                trigger={
-                  <Button size="sm" className="gap-2">
-                    <UserPlus className="h-4 w-4" />
-                    <span className="hidden sm:inline">Inviter</span>
-                  </Button>
-                }
-              />
-              <Button variant="ghost" size="sm" onClick={fetchUsers}>
-                <RefreshCw className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button variant="ghost" size="sm" onClick={fetchUsers}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-2">
-          {users.map((user) => (
-            <div
-              key={user.user_id}
-              className="flex items-center justify-between gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
-            >
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                <Avatar className="h-8 w-8 flex-shrink-0">
-                  <AvatarImage src={user.avatar_url || undefined} />
-                  <AvatarFallback className="text-xs bg-secondary">
-                    {user.full_name?.charAt(0) || user.email.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-medium truncate">
-                      {user.full_name || user.email}
-                    </p>
-                    {user.roles?.includes('admin') && (
-                      <Badge variant="secondary" className="text-xs flex-shrink-0">
-                        Admin
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                </div>
-              </div>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-8 w-8 p-0 flex-shrink-0"
-                    disabled={actionLoading === user.user_id}
-                  >
-                    {actionLoading === user.user_id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <MoreVertical className="h-4 w-4" />
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-popover">
-                  <DropdownMenuItem onClick={() => openRolesDialog(user)}>
-                    <Shield className="h-4 w-4 mr-2" />
-                    Modifier les rôles
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => openEditDialog(user)}>
-                    <Mail className="h-4 w-4 mr-2" />
-                    Modifier l'email
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleResendCredentials(user)}>
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Renvoyer les accès
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => openDeleteDialog(user)}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Supprimer
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          ))}
-          
-          {users.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Aucun utilisateur
-            </p>
-          )}
+        <CardContent>
+          <Tabs defaultValue={pendingUsers.length > 0 ? "pending" : "approved"} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 mb-4">
+              <TabsTrigger value="pending" className="gap-1 text-xs sm:text-sm">
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                En attente
+                {pendingUsers.length > 0 && (
+                  <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                    {pendingUsers.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="approved" className="gap-1 text-xs sm:text-sm">
+                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                Approuvés ({approvedUsers.length})
+              </TabsTrigger>
+              <TabsTrigger value="rejected" className="gap-1 text-xs sm:text-sm">
+                <XCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                Refusés ({rejectedUsers.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="pending" className="space-y-2">
+              {pendingUsers.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Aucune demande en attente
+                </p>
+              ) : (
+                pendingUsers.map((user) => (
+                  <UserRow key={user.user_id} user={user} showApprovalActions />
+                ))
+              )}
+            </TabsContent>
+
+            <TabsContent value="approved" className="space-y-2">
+              {approvedUsers.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Aucun utilisateur approuvé
+                </p>
+              ) : (
+                approvedUsers.map((user) => (
+                  <UserRow key={user.user_id} user={user} />
+                ))
+              )}
+            </TabsContent>
+
+            <TabsContent value="rejected" className="space-y-2">
+              {rejectedUsers.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Aucun utilisateur refusé
+                </p>
+              ) : (
+                rejectedUsers.map((user) => (
+                  <UserRow key={user.user_id} user={user} />
+                ))
+              )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
@@ -418,33 +502,6 @@ export default function AdminUsersPanel() {
               disabled={actionLoading !== null}
             >
               {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Supprimer'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Invite Code Dialog */}
-      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Code d'invitation</DialogTitle>
-            <DialogDescription>
-              Partagez ce code avec l'utilisateur pour qu'il puisse s'inscrire
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <div className="flex items-center gap-2">
-              <code className="flex-1 p-3 rounded bg-muted font-mono text-sm break-all">
-                {inviteCode}
-              </code>
-              <Button size="icon" variant="outline" onClick={copyInviteCode}>
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              </Button>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={() => setInviteDialogOpen(false)}>
-              Fermer
             </Button>
           </DialogFooter>
         </DialogContent>

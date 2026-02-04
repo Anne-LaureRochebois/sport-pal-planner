@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/Header';
@@ -19,11 +20,12 @@ interface Profile {
 }
 
 export default function Account() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isApproved } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fullName, setFullName] = useState('');
+  const navigate = useNavigate();
 
   async function fetchProfile() {
     if (!user) return;
@@ -44,6 +46,12 @@ export default function Account() {
   useEffect(() => {
     fetchProfile();
   }, [user]);
+
+  useEffect(() => {
+    if (!loading && user && !isApproved && !isAdmin) {
+      navigate('/pending');
+    }
+  }, [user, loading, isApproved, isAdmin, navigate]);
 
   async function handleUpdateProfile() {
     if (!user) return;

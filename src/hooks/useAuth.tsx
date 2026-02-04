@@ -7,8 +7,9 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
+  isApproved: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, fullName: string, inviteCode: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -19,6 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -29,9 +31,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (session?.user) {
           setTimeout(() => {
             checkAdminRole(session.user.id);
+            checkApprovalStatus(session.user.id);
           }, 0);
         } else {
           setIsAdmin(false);
+          setIsApproved(false);
         }
       }
     );
@@ -41,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkAdminRole(session.user.id);
+        checkApprovalStatus(session.user.id);
       }
       setLoading(false);
     });
@@ -59,23 +64,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAdmin(!!data);
   }
 
+  async function checkApprovalStatus(userId: string) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('is_approved')
+      .eq('user_id', userId)
+      .maybeSingle();
+    
+    setIsApproved(data?.is_approved ?? false);
+  }
+
   async function signIn(email: string, password: string) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error as Error | null };
   }
 
-  async function signUp(email: string, password: string, fullName: string, inviteCode: string) {
-    // Use the secure RPC function to validate invite code
-    const { data: isValid, error: rpcError } = await supabase
-      .rpc('validate_invite_code', { 
-        p_invite_code: inviteCode, 
-        p_email: email 
-      });
-
-    if (rpcError || !isValid) {
-      return { error: new Error("Code d'invitation invalide ou expiré. Assurez-vous d'utiliser l'adresse email qui a été invitée.") };
-    }
-
+  async function signUp(email: string, password: string, fullName: string) {
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -97,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, isApproved, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

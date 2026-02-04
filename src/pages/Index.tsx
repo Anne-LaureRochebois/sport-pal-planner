@@ -5,7 +5,7 @@ import Dashboard from './Dashboard';
 import { Loader2 } from 'lucide-react';
 
 export default function Index() {
-  const { user, loading } = useAuth();
+  const { user, loading, isApproved, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,6 +13,13 @@ export default function Index() {
       navigate('/auth');
     }
   }, [user, loading, navigate]);
+
+  useEffect(() => {
+    // Redirect to pending page if user is not approved (and not admin)
+    if (!loading && user && !isApproved && !isAdmin) {
+      navigate('/pending');
+    }
+  }, [user, loading, isApproved, isAdmin, navigate]);
 
   if (loading) {
     return (
@@ -22,7 +29,7 @@ export default function Index() {
     );
   }
 
-  if (!user) {
+  if (!user || (!isApproved && !isAdmin)) {
     return null;
   }
 

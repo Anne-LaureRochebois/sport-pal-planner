@@ -19,7 +19,6 @@ const signupSchema = z.object({
   fullName: z.string().min(2, 'Le nom doit contenir au moins 2 caractères').max(100),
   email: z.string().email('Adresse email invalide'),
   password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
-  inviteCode: z.string().min(1, "Le code d'invitation est requis"),
 });
 
 export default function Auth() {
@@ -28,7 +27,7 @@ export default function Auth() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [signupData, setSignupData] = useState({ fullName: '', email: '', password: '', inviteCode: '' });
+  const [signupData, setSignupData] = useState({ fullName: '', email: '', password: '' });
 
   useEffect(() => {
     if (user) {
@@ -67,13 +66,13 @@ export default function Auth() {
     }
     
     setIsSubmitting(true);
-    const { error } = await signUp(signupData.email, signupData.password, signupData.fullName, signupData.inviteCode);
+    const { error } = await signUp(signupData.email, signupData.password, signupData.fullName);
     setIsSubmitting(false);
     
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success('Compte créé ! Bienvenue.');
+      toast.success('Compte créé ! Un administrateur doit maintenant valider votre inscription.');
       navigate('/');
     }
   }
@@ -218,20 +217,9 @@ export default function Auth() {
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-invite">Code d'invitation</Label>
-                    <Input
-                      id="signup-invite"
-                      type="text"
-                      placeholder="Entrez votre code d'invitation"
-                      value={signupData.inviteCode}
-                      onChange={(e) => setSignupData({ ...signupData, inviteCode: e.target.value })}
-                      required
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Vous avez besoin d'une invitation d'un administrateur pour rejoindre
-                    </p>
-                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Après inscription, un administrateur devra valider votre compte
+                  </p>
                   <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
                     {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Créer un compte'}
                   </Button>
