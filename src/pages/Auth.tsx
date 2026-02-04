@@ -92,7 +92,7 @@ export default function Auth() {
       <div className="hidden lg:flex lg:w-1/2 gradient-primary p-12 flex-col justify-between">
         <div>
           <h1 className="font-display text-4xl font-bold text-primary-foreground">
-            SportSlot
+            GoMove
           </h1>
           <p className="mt-2 text-primary-foreground/80">
             Réservez des créneaux sportifs avec vos amis
@@ -132,7 +132,7 @@ export default function Auth() {
         </div>
         
         <p className="text-sm text-primary-foreground/60">
-          © 2026 SportSlot. Tous droits réservés.
+          © 2026 GoMove. Tous droits réservés.
         </p>
       </div>
       
@@ -141,7 +141,7 @@ export default function Auth() {
         <Card className="w-full max-w-md shadow-card border-0 animate-fade-in">
           <CardHeader className="text-center">
             <div className="lg:hidden mb-4">
-              <h1 className="font-display text-2xl font-bold text-primary">SportSlot</h1>
+              <h1 className="font-display text-2xl font-bold text-primary">GoMove</h1>
             </div>
             <CardTitle className="font-display text-2xl">Bienvenue</CardTitle>
             <CardDescription>Connectez-vous ou créez un compte pour continuer</CardDescription>

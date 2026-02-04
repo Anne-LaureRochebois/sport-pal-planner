@@ -59,7 +59,7 @@ export default function Header() {
             onClick={() => navigate('/')}
           >
             <h1 className="font-display text-xl font-bold text-primary">
-              SportSlot
+              GoMove
             </h1>
             <span className="text-2xl">🏃</span>
           </div>
