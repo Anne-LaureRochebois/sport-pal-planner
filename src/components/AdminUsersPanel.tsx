@@ -81,9 +81,8 @@ export default function AdminUsersPanel() {
     fetchUsers();
   }, []);
 
-  const pendingUsers = users.filter(u => !u.is_approved && !u.rejected_at);
+  const pendingUsers = users.filter(u => !u.is_approved);
   const approvedUsers = users.filter(u => u.is_approved);
-  const rejectedUsers = users.filter(u => !u.is_approved && u.rejected_at);
 
   async function handleApproveUser(user: User) {
     setActionLoading(user.user_id);
@@ -351,7 +350,7 @@ export default function AdminUsersPanel() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue={pendingUsers.length > 0 ? "pending" : "approved"} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-4">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="pending" className="gap-1 text-xs sm:text-sm relative">
                 <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                 En attente
@@ -364,10 +363,6 @@ export default function AdminUsersPanel() {
               <TabsTrigger value="approved" className="gap-1 text-xs sm:text-sm">
                 <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                 Approuvés ({approvedUsers.length})
-              </TabsTrigger>
-              <TabsTrigger value="rejected" className="gap-1 text-xs sm:text-sm">
-                <XCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-                Refusés ({rejectedUsers.length})
               </TabsTrigger>
             </TabsList>
 
@@ -390,18 +385,6 @@ export default function AdminUsersPanel() {
                 </p>
               ) : (
                 approvedUsers.map((user) => (
-                  <UserRow key={user.user_id} user={user} />
-                ))
-              )}
-            </TabsContent>
-
-            <TabsContent value="rejected" className="space-y-2">
-              {rejectedUsers.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Aucun utilisateur refusé
-                </p>
-              ) : (
-                rejectedUsers.map((user) => (
                   <UserRow key={user.user_id} user={user} />
                 ))
               )}
