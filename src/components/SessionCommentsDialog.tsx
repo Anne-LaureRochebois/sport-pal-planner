@@ -70,10 +70,10 @@ export default function SessionCommentsDialog({
       return;
     }
 
-    // Fetch profiles for all comment authors
+    // Fetch profiles for all comment authors using the safe view
     const userIds = [...new Set(commentsData.map(c => c.user_id))];
     const { data: profilesData } = await supabase
-      .from('profiles')
+      .from('profiles_safe')
       .select('user_id, full_name, email, avatar_url')
       .in('user_id', userIds);
 
@@ -122,9 +122,17 @@ export default function SessionCommentsDialog({
     }
   }, [open, sessionId]);
 
+  const MAX_COMMENT_LENGTH = 2000;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user || !newComment.trim()) return;
+
+    // Validate comment length
+    if (newComment.trim().length > MAX_COMMENT_LENGTH) {
+      toast.error(`Le commentaire est trop long (max ${MAX_COMMENT_LENGTH} caractères)`);
+      return;
+    }
 
     setSubmitting(true);
     const { error } = await supabase.from('session_comments').insert({
@@ -146,6 +154,12 @@ export default function SessionCommentsDialog({
 
   async function handleEdit(commentId: string) {
     if (!editContent.trim()) return;
+
+    // Validate edit content length
+    if (editContent.trim().length > MAX_COMMENT_LENGTH) {
+      toast.error(`Le commentaire est trop long (max ${MAX_COMMENT_LENGTH} caractères)`);
+      return;
+    }
 
     const { error } = await supabase
       .from('session_comments')
@@ -332,12 +346,22 @@ export default function SessionCommentsDialog({
 
           {/* New comment form */}
           <form onSubmit={handleSubmit} className="mt-4 pt-4 border-t space-y-3">
-            <Textarea
-              placeholder="Ajouter un commentaire..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              className="min-h-[80px] resize-none"
-            />
+            <div className="relative">
+              <Textarea
+                placeholder="Ajouter un commentaire..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                className="min-h-[80px] resize-none"
+                maxLength={MAX_COMMENT_LENGTH}
+              />
+              <span className={`absolute bottom-2 right-2 text-xs ${
+                newComment.length > MAX_COMMENT_LENGTH * 0.9 
+                  ? 'text-destructive' 
+                  : 'text-muted-foreground'
+              }`}>
+                {newComment.length}/{MAX_COMMENT_LENGTH}
+              </span>
+            </div>
             <Button
               type="submit"
               disabled={submitting || !newComment.trim()}
