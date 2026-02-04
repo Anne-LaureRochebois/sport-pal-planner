@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Check, CheckCheck, Trash2, Calendar, UserPlus, UserMinus, AlertCircle, AlarmClock } from 'lucide-react';
+import { Bell, Check, CheckCheck, Trash2, Calendar, UserPlus, UserMinus, AlertCircle, AlarmClock, UserCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +26,8 @@ function getNotificationIcon(type: Notification['type']) {
       return <AlertCircle className="h-4 w-4 text-destructive" />;
     case 'session_reminder':
       return <AlarmClock className="h-4 w-4 text-primary" />;
+    case 'new_user_pending':
+      return <UserCheck className="h-4 w-4 text-warning" />;
     default:
       return <Bell className="h-4 w-4" />;
   }
@@ -41,9 +43,13 @@ export default function NotificationBell() {
       await markAsRead(notification.id);
     }
     
-    if (notification.session_id) {
+    setOpen(false);
+    
+    if (notification.type === 'new_user_pending') {
+      // Navigate to the users panel in account page
+      navigate('/account');
+    } else if (notification.session_id) {
       // Navigate to the session (for now, just go to home where sessions are listed)
-      setOpen(false);
       navigate('/');
     }
   };
