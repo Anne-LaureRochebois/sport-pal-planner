@@ -60,10 +60,19 @@ serve(async (req: Request) => {
     }
 
     const url = new URL(req.url);
-    const method = req.method;
+    
+    // Parse body for action-based routing
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {
+      // No body or invalid JSON
+    }
+    
+    const action = body.action || 'list';
 
-    // GET: List all users with their profiles and roles
-    if (method === "GET") {
+    // LIST: List all users with their profiles and roles
+    if (action === 'list') {
       const { data: profiles, error } = await adminClient
         .from("profiles")
         .select("user_id, full_name, email, avatar_url, created_at, is_approved, rejected_at")
@@ -91,8 +100,8 @@ serve(async (req: Request) => {
     }
 
     // DELETE: Delete a user
-    if (method === "DELETE") {
-      const { userId: targetUserId } = await req.json();
+    if (action === 'delete') {
+      const targetUserId = body.userId;
       
       if (!targetUserId) {
         return new Response(JSON.stringify({ error: "userId requis" }), {
@@ -125,9 +134,10 @@ serve(async (req: Request) => {
       });
     }
 
-    // PATCH: Update user email
-    if (method === "PATCH") {
-      const { userId: targetUserId, email } = await req.json();
+    // UPDATE EMAIL: Update user email
+    if (action === 'updateEmail') {
+      const targetUserId = body.userId;
+      const email = body.email;
       
       if (!targetUserId || !email) {
         return new Response(JSON.stringify({ error: "userId et email requis" }), {
@@ -165,9 +175,10 @@ serve(async (req: Request) => {
       });
     }
 
-    // PUT: Update user roles
-    if (method === "PUT") {
-      const { userId: targetUserId, roles } = await req.json();
+    // UPDATE ROLES: Update user roles
+    if (action === 'updateRoles') {
+      const targetUserId = body.userId;
+      const roles = body.roles;
       
       if (!targetUserId || !Array.isArray(roles)) {
         return new Response(JSON.stringify({ error: "userId et roles requis" }), {
@@ -220,94 +231,7 @@ serve(async (req: Request) => {
       });
     }
 
-    // POST: Resend invite (create new invite for user)
-    if (method === "POST") {
-      const { email } = await req.json();
-      
-      if (!email) {
-        return new Response(JSON.stringify({ error: "email requis" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
-      }
-
-      // Check if user exists
-      const { data: existingProfile } = await adminClient
-        .from("profiles")
-        .select("user_id")
-        .eq("email", email)
-        .maybeSingle();
-
-      if (existingProfile) {
-        // User exists, send password reset
-        const { error } = await adminClient.auth.admin.generateLink({
-          type: "recovery",
-          email: email,
-        });
-
-        if (error) {
-          console.error("Error generating recovery link:", error);
-          throw error;
-        }
-
-        console.log(`Password reset generated for ${email} by admin ${userId}`);
-
-        return new Response(JSON.stringify({ 
-          success: true, 
-          message: "Lien de réinitialisation envoyé",
-          type: "recovery"
-        }), {
-          status: 200,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
-      } else {
-        // User doesn't exist, create new invite
-        const { data: inviteData, error: inviteError } = await adminClient
-          .from("invites")
-          .insert({
-            email: email.toLowerCase(),
-            invited_by: userId,
-          })
-          .select("invite_code")
-          .single();
-
-        if (inviteError) {
-          if (inviteError.code === "23505") {
-            // Invite already exists, get the code
-            const { data: existingInvite } = await adminClient
-              .from("invites")
-              .select("invite_code")
-              .eq("email", email.toLowerCase())
-              .single();
-            
-            return new Response(JSON.stringify({ 
-              success: true, 
-              inviteCode: existingInvite?.invite_code,
-              message: "Invitation existante récupérée",
-              type: "invite"
-            }), {
-              status: 200,
-              headers: { "Content-Type": "application/json", ...corsHeaders },
-            });
-          }
-          throw inviteError;
-        }
-
-        console.log(`New invite created for ${email} by admin ${userId}`);
-
-        return new Response(JSON.stringify({ 
-          success: true, 
-          inviteCode: inviteData.invite_code,
-          message: "Nouvelle invitation créée",
-          type: "invite"
-        }), {
-          status: 200,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
-      }
-    }
-
-    return new Response(JSON.stringify({ error: "Méthode non supportée" }), {
+    return new Response(JSON.stringify({ error: "Action non supportée" }), {
       status: 405,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
