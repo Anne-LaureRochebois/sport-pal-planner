@@ -81,7 +81,7 @@ export default function AdminUsersPanel() {
     fetchUsers();
   }, []);
 
-  const pendingUsers = users.filter(u => !u.is_approved);
+  const pendingUsers = users.filter(u => !u.is_approved && !u.rejected_at);
   const approvedUsers = users.filter(u => u.is_approved);
 
   async function handleApproveUser(user: User) {
