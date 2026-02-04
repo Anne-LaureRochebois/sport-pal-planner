@@ -98,7 +98,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
       if (!session.created_by) return;
       
       const { data } = await supabase
-        .from('profiles')
+        .from('profiles_safe')
         .select('full_name, email, avatar_url')
         .eq('user_id', session.created_by)
         .maybeSingle();
