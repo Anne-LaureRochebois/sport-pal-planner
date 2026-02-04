@@ -64,7 +64,7 @@ export default function AdminUsersPanel() {
     setLoading(true);
     try {
       const response = await supabase.functions.invoke('admin-users', {
-        method: 'GET',
+        body: { action: 'list' },
       });
 
       if (response.error) throw response.error;
@@ -123,8 +123,7 @@ export default function AdminUsersPanel() {
     setActionLoading(deletingUser.user_id);
     try {
       const response = await supabase.functions.invoke('admin-users', {
-        method: 'DELETE',
-        body: { userId: deletingUser.user_id },
+        body: { action: 'delete', userId: deletingUser.user_id },
       });
 
       if (response.error) throw response.error;
@@ -147,8 +146,7 @@ export default function AdminUsersPanel() {
     setActionLoading(editingUser.user_id);
     try {
       const response = await supabase.functions.invoke('admin-users', {
-        method: 'PATCH',
-        body: { userId: editingUser.user_id, email: newEmail },
+        body: { action: 'updateEmail', userId: editingUser.user_id, email: newEmail },
       });
 
       if (response.error) throw response.error;
@@ -177,8 +175,7 @@ export default function AdminUsersPanel() {
     setActionLoading(editingRolesUser.user_id);
     try {
       const response = await supabase.functions.invoke('admin-users', {
-        method: 'PUT',
-        body: { userId: editingRolesUser.user_id, roles: selectedRoles },
+        body: { action: 'updateRoles', userId: editingRolesUser.user_id, roles: selectedRoles },
       });
 
       if (response.error) throw response.error;
