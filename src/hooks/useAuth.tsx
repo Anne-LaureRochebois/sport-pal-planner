@@ -65,16 +65,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signUp(email: string, password: string, fullName: string, inviteCode: string) {
-    // First verify the invite code
-    const { data: invite } = await supabase
-      .from('invites')
-      .select('*')
-      .eq('invite_code', inviteCode)
-      .eq('email', email)
-      .eq('used', false)
-      .maybeSingle();
+    // Use the secure RPC function to validate invite code
+    const { data: isValid, error: rpcError } = await supabase
+      .rpc('validate_invite_code', { 
+        p_invite_code: inviteCode, 
+        p_email: email 
+      });
 
-    if (!invite) {
+    if (rpcError || !isValid) {
       return { error: new Error("Code d'invitation invalide ou expiré. Assurez-vous d'utiliser l'adresse email qui a été invitée.") };
     }
 
