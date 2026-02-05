@@ -6,7 +6,9 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -92,6 +94,7 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
   const [isLoading, setIsLoading] = useState(false);
   const [isDeletingSession, setIsDeletingSession] = useState(false);
   const [creator, setCreator] = useState<CreatorProfile | null>(null);
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     async function fetchCreator() {
@@ -305,21 +308,45 @@ export default function SessionCard({ session, onBookingChange, showPastStatus =
           <div className="flex items-center gap-1 pt-2">
             <span className="text-xs text-muted-foreground mr-2">Participants :</span>
             <div className="flex -space-x-2">
-              {session.bookings.slice(0, 5).map((booking) => (
-                <Tooltip key={booking.id}>
-                  <TooltipTrigger>
-                    <Avatar className="h-7 w-7 border-2 border-background">
-                      <AvatarImage src={booking.profiles?.avatar_url || undefined} />
-                      <AvatarFallback className="text-xs bg-secondary text-secondary-foreground">
-                        {booking.profiles?.full_name?.charAt(0) || booking.profiles?.email?.charAt(0) || '?'}
-                      </AvatarFallback>
-                    </Avatar>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {booking.profiles?.full_name || booking.profiles?.email}
-                  </TooltipContent>
-                </Tooltip>
-              ))}
+              {session.bookings.slice(0, 5).map((booking) => {
+                const displayName = booking.profiles?.full_name || booking.profiles?.email || 'Inconnu';
+                
+                if (isMobile) {
+                  return (
+                    <Popover key={booking.id}>
+                      <PopoverTrigger asChild>
+                        <button className="focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-full">
+                          <Avatar className="h-7 w-7 border-2 border-background cursor-pointer">
+                            <AvatarImage src={booking.profiles?.avatar_url || undefined} />
+                            <AvatarFallback className="text-xs bg-secondary text-secondary-foreground">
+                              {booking.profiles?.full_name?.charAt(0) || booking.profiles?.email?.charAt(0) || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto px-3 py-2 text-sm" side="top">
+                        {displayName}
+                      </PopoverContent>
+                    </Popover>
+                  );
+                }
+                
+                return (
+                  <Tooltip key={booking.id}>
+                    <TooltipTrigger>
+                      <Avatar className="h-7 w-7 border-2 border-background">
+                        <AvatarImage src={booking.profiles?.avatar_url || undefined} />
+                        <AvatarFallback className="text-xs bg-secondary text-secondary-foreground">
+                          {booking.profiles?.full_name?.charAt(0) || booking.profiles?.email?.charAt(0) || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {displayName}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
               {session.bookings.length > 5 && (
                 <Avatar className="h-7 w-7 border-2 border-background">
                   <AvatarFallback className="text-xs bg-muted text-muted-foreground">
