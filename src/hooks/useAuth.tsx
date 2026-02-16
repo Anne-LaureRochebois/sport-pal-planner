@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  profileLoading: boolean;
   isAdmin: boolean;
   isApproved: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
@@ -19,6 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
 
@@ -29,23 +31,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          setTimeout(() => {
-            checkAdminRole(session.user.id);
-            checkApprovalStatus(session.user.id);
+          setProfileLoading(true);
+          setTimeout(async () => {
+            await Promise.all([
+              checkAdminRole(session.user.id),
+              checkApprovalStatus(session.user.id),
+            ]);
+            setProfileLoading(false);
           }, 0);
         } else {
           setIsAdmin(false);
           setIsApproved(false);
+          setProfileLoading(false);
         }
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdminRole(session.user.id);
-        checkApprovalStatus(session.user.id);
+        await Promise.all([
+          checkAdminRole(session.user.id),
+          checkApprovalStatus(session.user.id),
+        ]);
+        setProfileLoading(false);
+      } else {
+        setProfileLoading(false);
       }
       setLoading(false);
     });
@@ -101,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, isApproved, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, profileLoading, isAdmin, isApproved, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );
